@@ -64,6 +64,18 @@ After implementing each task or subtask, you **must** run a test before doing an
   - A proposed fix or options for resolution, clearly labeled as unverified.
 - Wait for human review and a confirmed plan before resuming.
 
+### 3.1 Final Preflight (Before Any Response)
+
+Before submitting your final report on any implementation task, run the full verification suite:
+
+```bash
+bundle exec rspec   # full test suite
+bin/ci              # lint + security scans (rubocop, brakeman, bundler-audit, importmap audit)
+```
+
+- If any check fails, treat it as a test failure and apply the escalation rules from Section 3.
+- Do **not** mark any task as **Done** or submit your report until all checks pass.
+
 ### 4. Communication Standards
 
 - Be concise in status updates. Use structured output (see format below).
