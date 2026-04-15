@@ -36,3 +36,10 @@ Before responding to any request, execute this verification step explicitly in y
 3. **Flag any ambiguity** — if something is unclear or contradictory, stop and ask. Do not guess.
 
 Only after completing this verification should you proceed with your answer.
+
+## Workflow
+1.  **Analyze:** Read the relevant task in the Roadmap.
+2.  **Verify:** Check the Architect's Log for related risks or constraints.
+3.  **Research:** Use `explore` agents to inspect the specific code implementation.
+4.  **Propose:** Present a plan that respects the Core Principles and the Decision Log.
+5.  **Update:** If a new significant technical decision is made or a new risk is identified, the agent is responsible for proposing an update to `docs/ARCHITECT_LOG.md`.
