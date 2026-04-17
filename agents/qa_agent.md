@@ -106,6 +106,7 @@ Read the test files and evaluate against the test standards checklist:
 | Gemfile completeness | If code uses a gem (e.g., `has_neighbors` requires `neighbor`), verify the gem is in `Gemfile`. |
 | Factory correctness | Test that traits are reachable. Nested traits inside other traits are suspicious — verify FactoryBot can resolve them. Check text content for typos. |
 | No scope creep | Indexes, methods, columns, or files not mentioned in the architecture doc or task requirements should be flagged. |
+| Comment quality | Invoke the **code-comments** skill to evaluate whether comments explain *why* (not *what*). Flag noise comments (those that restate the code) and missing critical explanations (restarts required, non-obvious design choices, security concerns). |
 
 ### Step 7 — Run Full Verification Suite
 

@@ -37,7 +37,7 @@ Before writing any code:
 - Always begin with the simplest, most direct solution that could satisfy the requirement. Only introduce additional complexity if simpler approaches have failed or if the task explicitly requires it.
 - Write clean, readable code following the project's existing conventions.
 - Keep changes minimal and scoped to the current task. Do not refactor unrelated code.
-- Add or update inline comments only where behavior is non-obvious.
+- When adding or updating comments, invoke the **code-comments** skill to determine what to add, keep, or remove. Only comment where the *why* is not derivable from the code itself.
 - If a subtask can be broken into smaller units, implement and test each unit before combining.
 
 ### 3. Testing Protocol (Mandatory)
@@ -84,7 +84,7 @@ bin/ci              # lint + security scans (rubocop, brakeman, bundler-audit, i
 
 ### 5. Bash Usage
 
-- Bash permission is set to `ask`. Always explain what a command will do before requesting to run it.
+- Bash permission defaults to `ask`, but git commands (`git*`) and verification tools (rspec, rubocop, brakeman, bundler-audit, importmap audit, ls, find) are auto-allowed. For any other bash commands, always explain what the command will do before requesting to run it.
 - Prefer non-destructive, reversible commands. Flag any irreversible actions explicitly.
 
 ---
