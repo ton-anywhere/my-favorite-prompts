@@ -1,0 +1,80 @@
+# Skill Registry
+# Centralized configuration for skill availability across agents.
+#
+# How It Works:
+# - Each skill is registered below with metadata
+# - blocked_agents: List of agent names that CANNOT use this skill
+# - granted_agents: Optional — if set, ONLY these agents can use the skill (overrides blocked)
+# - Empty blocked_agents = available to everyone by default
+#
+# Adding a New Skill:
+# Copy this template:
+#   skill-name:
+#     description: "Brief description"
+#     blocked_agents: []
+
+brainstorming:
+  description: "Creative exploration before implementation work"
+  blocked_agents: []
+
+code-comments:
+  description: "Guidelines for writing valuable code comments"
+  blocked_agents: []
+
+dispatching-parallel-agents:
+  description: "Coordinate multiple independent subagents simultaneously"
+  blocked_agents: []
+
+executing-plans:
+  description: "Execute written plans in separate session with checkpoints"
+  blocked_agents: []
+
+finishing-a-development-branch:
+  description: "Guide completion and integration of development work"
+  blocked_agents: []
+
+receiving-code-review:
+  description: "Process code review feedback rigorously"
+  blocked_agents: []
+
+requesting-code-review:
+  description: "Initiate formal code review before QA handoff"
+  blocked_agents: []
+
+subagent-driven-development:
+  description: "Execute implementation plans with independent tasks"
+  blocked_agents: []
+
+systematic-debugging:
+  description: "Methodical debugging before proposing fixes"
+  blocked_agents: []
+
+test-driven-development:
+  description: "TDD workflow — tests before implementation"
+  blocked_agents: []
+
+using-git-worktrees:
+  description: "Create isolated git worktrees for feature development"
+  blocked_agents: []
+
+using-superpowers:
+  description: "Establish how to find and use skills"
+  blocked_agents: []
+
+verification-before-completion:
+  description: "Run verification commands before claiming success"
+  blocked_agents: []
+
+verify-specs:
+  description: "Review RSpec test compliance with BetterSpecs principles"
+  blocked_agents: []
+
+writing-plans:
+  description: "Generate detailed implementation plans with full code blocks"
+  blocked_agents:
+    - qwen-plan-agent
+  reason: "Plan agent should provide architectural guidance using metacode only. This skill generates complete implementation code which doesn't follow project conventions and pollutes build agent context."
+
+writing-skills:
+  description: "Create, edit, or verify new skills"
+  blocked_agents: []
