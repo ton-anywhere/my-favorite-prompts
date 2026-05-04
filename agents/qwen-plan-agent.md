@@ -1,4 +1,4 @@
-# Plan Agent — Qwen3.5 27B Reasoning (Q8_0)
+# Plan Agent — Qwen3.6 27B (Q8_0)
 
 ## Role
 

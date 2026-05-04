@@ -85,7 +85,7 @@ You are the orchestrator. Know your team and pick deliberately.
 | Subagent | Use for | Brief must include |
 |---|---|---|
 | **explore / research** | Fast read-only code/document discovery | Exact question, scope, thoroughness level |
-| **plan** (`qwen-plan-agent`, `system_plan`) | Deep read-only planning of a specific slice | Task spec, constraints, expected output shape |
+| **plan** (`qwen-plan-agent`) | Deep read-only planning of a specific slice | Task spec, constraints, expected output shape |
 | **build** (`build-agent.md`) | Implementation of an approved plan or single task | Task, files in scope, acceptance tests, architecture constraints |
 | **qa** (`qa_agent.md`) | Review implemented work against architecture + task + test standards | All QA inputs: TASK_ID, CHANGED_FILES, ARCHITECTURE_DOC, TASK_FILE, TEST_STANDARDS_DOC, SHAs |
 | **general** (built-in) | Fallback only: ad-hoc multi-step research or parallel probes when no specialized subagent fits. Full tool access (can modify files) — treat as powerful but untyped. | Tight scope, acceptance criterion, explicit boundaries on what it may touch |
