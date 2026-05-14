@@ -18,6 +18,33 @@ The following specialized skills are available to support your review process. I
 
 **Skill loading guardrail:** Load each skill at most once per review session. After a skill has been invoked, treat its instructions as already available and do not invoke that same skill again. If you are about to reload a skill, stop and continue the review or produce the final report using the evidence already gathered.
 
+## Mandatory Skill Trigger Scan
+
+Before Step 1, scan the user prompt, changed file paths, task text, and visible
+diff/file contents for these trigger words and concepts. If any trigger matches,
+load the matching skill before continuing the review.
+
+Do not treat this as a substitute for judgment. Trigger words are a safety net:
+if the code clearly matches the skill even without exact trigger words, load the
+skill anyway.
+
+| Skill | Trigger words and concepts |
+|---|---|
+| **stateful-lifecycle-audit** | `singleton`, `instance`, `@instance`, `class variable`, `class instance variable`, `@@`, `memoize`, `memoization`, `cache`, `registry`, `loaded`, `ready`, `warm`, `warmup`, `lazy`, `lazy-load`, `load once`, `reload`, `unload`, `reset`, `mutex`, `synchronize`, `thread`, `thread-safe`, `background job`, `last_used_at`, `connection`, `client`, `session`, `tokenizer`, `model`, `ONNX`, `long-lived resource` |
+| **verify-specs** | `spec`, `RSpec`, `describe`, `context`, `it`, `expect`, `let`, `before`, `factory`, files under `spec/`, files ending in `_spec.rb` |
+| **code-comments** | added/modified comments, `#`, `TODO`, `NOTE`, `why`, `comment`, `documentation`, `docstring` |
+
+When a trigger matches, record it in scratchpad form:
+
+```markdown
+Skill trigger scan:
+- stateful-lifecycle-audit: triggered by `singleton`, `@instance`, `mutex`
+- verify-specs: triggered by `spec/services/..._spec.rb`
+- code-comments: not triggered
+```
+
+Your final report must include a short `Skill Audits` section:
+
 ---
 
 If the project's `AGENT.md` / `AGENTS.md` defines a **Development Loop**, emit verdicts (`Yes` / `No` / `With fixes`) that map to its loop-back states.
@@ -46,7 +73,7 @@ If changes are uncommitted (untracked files), skip the git diff step and read fi
 
 ## Review Procedure
 
-Execute these steps **in order**. Do not skip steps. Do not start writing the report until all steps are complete.
+Execute the trigger scan, then these steps **in order**. Do not skip steps. Do not start writing the report until all steps are complete.
 
 ### Step 1 — Load Reference Documents
 
@@ -124,7 +151,8 @@ Mark each sub-task as: **Complete**, **Incomplete**, or **Deviates**.
 
 ### Step 4b — Stateful Lifecycle Audit
 
-Invoke **stateful-lifecycle-audit** for any changed code with persistent lifecycle state. If a changed service appears stateful but the audit is not applicable, state why in the review report.
+If the trigger scan matched **stateful-lifecycle-audit**, invoke the skill before
+this step.
 
 ### Step 5 — Test Quality Review
 
@@ -140,6 +168,7 @@ Read the test files and evaluate against the test standards checklist. For compr
 | Edge cases covered | For each unique index → test duplicate insertion raises error. For each nullable column → test null is accepted. For each NOT NULL column → test null is rejected. |
 | `describe`/`context` conventions | `.method_name` for class methods, `#method_name` for instance methods. Scopes are class-level (`.`). |
 | No orphaned test infrastructure | If factories, shared examples, or support files exist, they must be used. Unused = fail. |
+| Stateful lifecycle coverage | Lazy-loaded/singleton services must have behavioral specs proving repeated public calls reuse the resource and reset/unload paths clear readiness and resource state together. |
 
 ### Step 6 — Structural & Hygiene Checks
 
@@ -261,6 +290,7 @@ Provenance: [New | Carryover from v{N} | Reversal of v{N}]
 - Say "looks good" without completing all 7 steps
 - Invent requirements not in the architecture doc or task list
 - Skip the test quality review because "tests pass"
+- Mark singleton, memoization, lazy-loading, registry, mutex, or cache code correct just because it matches a familiar pattern — trace the reads/writes and at least two public calls
 - Reverse a prior review's judgment without an explicit explanation of why it was wrong
 - Present pre-existing issues as if they were introduced by the last fix loop — use provenance labels to distinguish
 
