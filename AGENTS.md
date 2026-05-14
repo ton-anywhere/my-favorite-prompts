@@ -7,7 +7,7 @@ This repository is a prompt-and-skill workspace, not a compiled app.
 - `agents/`: agent definitions and role templates.
 - `skills/`: local Codex skills, one per folder (`skills/<skill-name>/SKILL.md`).
 - `superpowers/`: upstream checkout used as a linked dependency; treat as external unless intentionally updating it.
-- `tasks/` and `metaprompt/`: planning notes and long-form prompt docs.
+- `metaprompt/`: metapromtps - prompts that generate prompts.
 
 ## Build, Test, and Development Commands
 - `./bootstrap.sh`: clones/updates `superpowers/`, links `skills/` into `~/.agents/skills`, and maintains symlinks.
