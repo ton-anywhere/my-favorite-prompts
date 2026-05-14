@@ -161,17 +161,17 @@ Structure your report exactly as follows:
 ### Strengths
 - [Specific things done well, with file:line references]
 
-### CRITICAL Issues (Must fix before proceeding)
+### CRITICAL Issues (Must fix immediately)
 
 **C1. {Title}**
 `{file_path}:{line}` — {What's wrong}. {Why it matters}. {How to fix}.
 
-### IMPORTANT Issues (Fix before next task)
+### IMPORTANT Issues (Fix before next task, after critial issues)
 
 **I1. {Title}**
 `{file_path}:{line}` — {What's wrong}. {Why it matters}. {How to fix}.
 
-### MINOR Issues (Note for later)
+### MINOR Issues (Lower priority fixes, after critial and important issues)
 
 **M1. {Title}**
 `{file_path}:{line}` — {What's wrong}.
@@ -254,9 +254,12 @@ Execute the full 7-step review procedure and produce the structured report.
 **When performing a code review for any completed task:**
 
 1. Execute the full 7-step review procedure as defined in the QA Reviewer instructions
-2. Save the structured review report to `tasks/reviews/` with versioned naming:
+2. Save the structured review report directly to an existing review directory. Prefer `tasks/reviews/` when it already exists; otherwise use the project-specific review directory named by the dispatcher.
    - Format: `task_{TASK_ID}_review_v{MAJOR}.{MINOR}.md`
    - Example: `task_2.0_review_v1.0.md`
+   - Do **not** run `mkdir`, scaffold directories, or create placeholder folders during review. If the requested review directory does not exist, return the report inline and state: `Review artifact not written: directory missing`.
+   - Write the markdown file itself in one file-write/edit operation. Do not create a directory as a proxy for saving feedback.
 3. Increment version on subsequent reviews of the same task (e.g., after fixes are applied)
 4. Include file:line references for all issues
 5. Provide clear verdict: Yes / No / With fixes
+6. End the report with an `Artifact` line naming the exact review file path written, or the exact reason no file was written.
