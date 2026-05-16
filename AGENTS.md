@@ -1,18 +1,24 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a prompt-and-skill workspace, not a compiled app.
+This repository is a prompt, skill and agents workspace, not a compiled app.
 
 - `prompts/`: reusable prompt fragments (`*.md`).
 - `agents/`: agent definitions and role templates.
-- `skills/`: local Codex skills, one per folder (`skills/<skill-name>/SKILL.md`).
-- `superpowers/`: upstream checkout used as a linked dependency; treat as external unless intentionally updating it.
+- `skills/`: local skills, one per folder (`skills/<skill-name>/SKILL.md`).
 - `metaprompt/`: metapromtps - prompts that generate prompts.
+
+Upstream checkouts are used as a linked dependency;
+- `superpowers/`
+- `lambdatest-agent-skills/`
+- `steipete-agent-scripts/`
 
 ## Build, Test, and Development Commands
 - `./bootstrap.sh`: clones/updates `superpowers/`, links `skills/` into `~/.agents/skills`, and maintains symlinks.
 - `./flatten_superpowers.sh`: creates/refreshes symlinks from `superpowers/skills/*` into local `skills/`.
 - `git -C superpowers pull --ff-only origin main`: updates the upstream checkout without merge commits.
+- `git -C lambdatest-agent-skills pull --ff-only origin main`: updates the upstream checkout without merge commits.
+- `git -C steipete-agent-scripts pull --ff-only origin main`: updates the upstream checkout without merge commits.
 
 ## Coding Style & Naming Conventions
 - Use Markdown for content and keep sections concise, imperative, and scannable.
