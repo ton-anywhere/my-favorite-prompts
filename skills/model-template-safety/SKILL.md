@@ -1,6 +1,9 @@
 ---
 name: model-template-safety
 description: Use when work involves LLM chat templates, tokenizer artifacts, special/stop/control tokens, reasoning tags, generation prompts, generation service task docs, local generation models, ONNX causal-LM contracts, SmolLM/Qwen/Gemma prompts, KV cache inputs, past_key_values, or thinking-mode sessions.
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Model Template Safety

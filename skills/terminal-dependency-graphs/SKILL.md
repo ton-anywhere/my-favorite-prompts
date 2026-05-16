@@ -1,6 +1,9 @@
 ---
 name: terminal-dependency-graphs
 description: Use when a user asks to visualize task, subtask, roadmap, checklist, or project-plan dependencies in a terminal-readable format, especially for deciding worktrees, agent parallelization, vertical ASCII graphs, or what can run in parallel.
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Terminal Dependency Graphs
