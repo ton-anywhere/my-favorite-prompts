@@ -1,6 +1,9 @@
 ---
 name: code-comments
 description: "Use when writing new code or reviewing existing code to decide which comments to add, keep, or remove. Defines what makes a comment valuable vs. noise."
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Code Comments Standard

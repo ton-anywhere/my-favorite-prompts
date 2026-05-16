@@ -1,6 +1,9 @@
 ---
 name: safe-model-artifact-inspection
 description: Use when extracting technical details from model artifacts, tokenizer configs, chat templates, special/stop/control tokens, ONNX causal-LM contracts, prompt files, generation service task docs, local generation models, SmolLM/Qwen/Gemma artifacts, KV cache inputs, past_key_values, or session exports where raw control text could break or steer an agent.
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Safe Model Artifact Inspection
