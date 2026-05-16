@@ -7,21 +7,32 @@ Personal AI workspace for prompts, agents, and skills.
 - `prompts/` for reusable prompt fragments
 - `agents/` for agent definitions
 - `skills/` for Codex skills
-- `superpowers/` for a separate upstream Superpowers checkout
+- `metaprompt/` for prompts that generate prompts
+- [`superpowers/`](https://github.com/obra/superpowers) for the upstream Superpowers checkout
+- [`lambdatest-agent-skills/`](https://github.com/LambdaTest/agent-skills) for the upstream LambdaTest agent skills checkout
+- [`steipete-agent-scripts/`](https://github.com/steipete/agent-scripts) for the upstream agent scripts checkout
 
-## Superpowers setup
+## Setup
 
-Bootstrap everything with:
+Bootstrap the managed upstream checkouts and skill links with:
 
 ```bash
 ./bootstrap.sh
 ```
 
-Update Superpowers later with:
+This clones or updates `superpowers/` and `lambdatest-agent-skills/`, links
+`skills/` into `~/.agents/skills`, and exposes selected upstream skills through
+local symlinks.
+
+## Updating Upstreams
+
+Update the upstream checkouts with:
 
 ```bash
 git -C superpowers pull --ff-only origin main
+git -C lambdatest-agent-skills pull --ff-only origin main
+git -C steipete-agent-scripts pull --ff-only origin main
 ```
 
 If you add or rename local skills, keep them under `skills/<name>/SKILL.md`.
-`skills/superpowers` is reserved for the upstream Superpowers checkout.
+`skills/superpowers` is reserved for the upstream Superpowers skills link.
