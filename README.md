@@ -21,10 +21,10 @@ Bootstrap the managed upstream checkouts and skill links with:
 ./bootstrap.sh
 ```
 
-This clones or updates `superpowers/`, `lambdatest-agent-skills/`, and
-`impeccable/`, links `skills/` into `~/.agents/skills`, exposes selected
-upstream skills through local symlinks, and links custom opencode skills into
-`~/.opencode/skills`.
+1. This clones or updates upstream directories
+2. Links upstream skills into `/skills`
+3. Links `/skills` into `~/.agents/skills`
+4. exposes custom opencode skills into `~/.opencode/skills`.
 
 ## Updating Upstreams
 
@@ -38,4 +38,3 @@ git -C steipete-agent-scripts pull --ff-only origin main
 ```
 
 If you add or rename local skills, keep them under `skills/<name>/SKILL.md`.
-`skills/superpowers` is reserved for the upstream Superpowers skills link.
