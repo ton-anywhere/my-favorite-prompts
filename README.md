@@ -10,6 +10,7 @@ Personal AI workspace for prompts, agents, and skills.
 - `metaprompt/` for prompts that generate prompts
 - [`superpowers/`](https://github.com/obra/superpowers) for the upstream Superpowers checkout
 - [`lambdatest-agent-skills/`](https://github.com/LambdaTest/agent-skills) for the upstream LambdaTest agent skills checkout
+- [`impeccable/`](https://github.com/pbakaus/impeccable) for the upstream Impeccable checkout
 - [`steipete-agent-scripts/`](https://github.com/steipete/agent-scripts) for the upstream agent scripts checkout
 
 ## Setup
@@ -20,9 +21,10 @@ Bootstrap the managed upstream checkouts and skill links with:
 ./bootstrap.sh
 ```
 
-This clones or updates `superpowers/` and `lambdatest-agent-skills/`, links
-`skills/` into `~/.agents/skills`, and exposes selected upstream skills through
-local symlinks.
+This clones or updates `superpowers/`, `lambdatest-agent-skills/`, and
+`impeccable/`, links `skills/` into `~/.agents/skills`, exposes selected
+upstream skills through local symlinks, and links custom opencode skills into
+`~/.opencode/skills`.
 
 ## Updating Upstreams
 
@@ -31,6 +33,7 @@ Update the upstream checkouts with:
 ```bash
 git -C superpowers pull --ff-only origin main
 git -C lambdatest-agent-skills pull --ff-only origin main
+git -C impeccable pull --ff-only origin main
 git -C steipete-agent-scripts pull --ff-only origin main
 ```
 
