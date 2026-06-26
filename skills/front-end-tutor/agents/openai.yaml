@@ -1,0 +1,10 @@
+interface:
+  display_name: "Front-End Tutor"
+  short_description: "Tailwind category coaching for frontend learning"
+  default_prompt: "Use $front-end-tutor to guide me through styling this component with Tailwind categories, without giving me the solution."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "tailwindcss-server"
+      description: "Tailwind CSS documentation, utility, color, and CSS-to-utility lookup for accurate tutoring."
