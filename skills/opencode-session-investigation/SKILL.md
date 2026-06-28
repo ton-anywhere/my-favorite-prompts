@@ -29,6 +29,16 @@ Reconstruct what actually happened in an opencode session from exported parent a
 
    If the available artifact is markdown, use it for narrative review and quoting. When exact metadata is needed, run the JSON export command above too.
 
+   During an investigation, OpenCode runtime logs are available at:
+   ```text
+   /home/airtonp/.local/share/opencode/log
+   ```
+   Search them by session ID, timestamp, error text, or tool name when exports do not explain runtime behavior:
+   ```bash
+   rg -n "<session_id|timestamp|error|tool_name>" /home/airtonp/.local/share/opencode/log
+   ```
+   Treat logs as supporting runtime evidence; use session exports as the canonical source for conversation structure and agent actions.
+
    To **create markdown**, launch the TUI from the directory where the `.md` should be saved:
    ```bash
    opencode -s <session_id>
@@ -76,6 +86,7 @@ Reconstruct what actually happened in an opencode session from exported parent a
 - Use TUI-exported markdown as a companion artifact for human review, quoting, and reports. It is easier to skim, but less precise for root-cause analysis.
 - If a TUI export does not save where expected, re-run `opencode -s <session_id>` from the desired destination directory and verify the created file path.
 - Session exports can include later debugging interactions after the original incident. Anchor findings to exact message IDs, timestamps, and agent names so later investigation activity is not mistaken for the drift.
+- OpenCode runtime logs are readable from `/home/airtonp/.local/share/opencode/log`. Correlate matching entries with the session ID and timestamp before using them as evidence.
 - Search the OpenCode database only as a last fallback when the session ID/timestamp cannot be found through saved exports or normal export commands.
 - Keep findings tied to exact session IDs and agent names so fixes target the right prompt.
 
@@ -105,6 +116,7 @@ Reconstruct what actually happened in an opencode session from exported parent a
 | Using TUI markdown as the only evidence | Use CLI JSON as the canonical investigation artifact, then add markdown for readability |
 | Starting TUI export from the wrong directory | Launch `opencode -s <session_id>` from the folder where the `.md` should be saved |
 | Using database search/export as the default path | Use `opencode export <session_id>` first; database inspection is fallback only |
+| Ignoring runtime logs when exports omit an error | Search `/home/airtonp/.local/share/opencode/log`, then correlate entries by session ID and timestamp |
 | Trusting an agent's final report | Check tool calls and diffs |
 | Calling every prompt loophole a confirmed drift | Label it as inferred prompt risk unless the trace proves it |
 | Fixing only with stricter prose | Add permission denies for mechanical behaviors |
