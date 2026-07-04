@@ -1,0 +1,4 @@
+interface:
+  display_name: "GNOME Script Launchers"
+  short_description: "Create GNOME buttons and script menus"
+  default_prompt: "Use $gnome-script-launchers to add my scripts to a GNOME launcher menu."
