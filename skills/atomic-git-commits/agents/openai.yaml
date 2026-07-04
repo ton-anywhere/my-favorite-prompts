@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atomic Git Commits"
+  short_description: "Create small, clear, consistent Git commits"
+  default_prompt: "Use $atomic-git-commits to propose and create small commits for the current changes."
