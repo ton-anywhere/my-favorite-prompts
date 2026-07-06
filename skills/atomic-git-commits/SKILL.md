@@ -7,6 +7,13 @@ description: "Invoke immediately if the Navigator mentions: inspecting changes (
 
 Create small commits with self-contained intent and consistently useful messages. Treat these rules as authoritative; do not infer style from repository history, which may be noisy or inconsistent.
 
+## Small-Model Profile
+
+If `SMALL_MODEL_PROFILE` is active, read
+[`references/small-model-playbook.md`](references/small-model-playbook.md) completely
+before planning, running a Git command, or replying. The playbook expands this
+skill; it does not replace or weaken any rule in this file.
+
 ## The Principles of Atomicity
 
 1.  **One Change per Commit:** Do not bundle unrelated changes. If you are working on a bug fix, a refactor, and a documentation update, create three separate commits.
