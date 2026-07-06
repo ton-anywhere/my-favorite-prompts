@@ -40,7 +40,7 @@ Use Conventional Commits:
 
 -   **Type:** Use the narrowest accurate type: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`, `build`, `ci`, `style`, or `revert`.
 -   **Logic vs Documentation:** Use `feat` or `fix` if the logic, behavior, or capabilities of the skill/agent change. Use `docs` ONLY for pure documentation/explanation changes that do not alter how the agent/skill functions.
--   **Scope:** Use a concise scope (e.g., a component, directory, or feature name). Omit if no single scope accurately describes the change.
+-   **Scope:** Use a concise scope (e.g., a component, directory, or feature name). Omit if no single scope accurately describes the change. Do not repeat the type as the scope (e.g., avoid `docs(docs)`).
 -   **Mood:** Use lowercase imperative mood (e.g., `add`, `remove`, `tune`, `refactor`). Do not use `added`, `updated`, or `fixes`.
 -   **Conciseness:** Keep the subject at or below 50 characters. Avoid punctuation at the end.
 -   **No Filler:** Be direct. Eliminate filler words like "I think," "maybe," or "just."
@@ -51,7 +51,7 @@ Good examples:
 feat(gnome): add AI server controls
 test(gnome): cover AI server control actions
 perf(router): tune idle model unloading
-docs(llama-cpp): explain router parameters
+docs: add small model decode optimization guide
 ```
 
 Avoid vague subjects such as `fix bug`, `update files`, `misc changes`, or `work in progress`.
