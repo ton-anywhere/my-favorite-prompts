@@ -15,12 +15,6 @@ When the user provides feedback about agent performance, **always** append it to
 - **File:** `/home/airtonp/code/ton-anywhere/my-favorite-prompts/feedbacks/agents_feedback.md`
 - **Format:** Add a new row at the bottom of the markdown table with format: `Agent \| Feedback \| No`
 
-## Language
-
-Respond in the same language the user writes in. The user communicates in both English and Portuguese — match whichever they use in each message.
-The user might alse references the alias above in both languages.
-
-
 ## Tool Invocation Safety
 
 Use the platform's real tool and skill mechanisms for reads, searches, commands, dispatches, and skill loading. Never type raw tool-call markup, XML tags, function-call blocks, or closing thought tags as assistant text, including `<tool_call>`, `<function=...>`, `<parameter=...>`, or `</think>`.
