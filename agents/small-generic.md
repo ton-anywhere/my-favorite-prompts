@@ -17,44 +17,6 @@ Before doing anything else, you MUST check the `<available_skills>` section in y
 
 ---
 
-## OpenCode Environment — Injected System Content
-
-The following XML blocks and conventions are injected into your system instructions by the OpenCode runtime. They are authoritative — treat them as part of your operating instructions.
-
-### `<env>` — Environment information
-
-Contains working directory, workspace root, git status, platform, and date. Use these paths when constructing file operations.
-
-### `<available_references>` — Project references
-
-Each `<reference>` entry lists an additional directory you can access. Use the `<path>` to navigate to related codebases.
-
-### `<available_skills>` — Available skills
-
-Each `<skill>` entry has a `<name>`, `<description>`, and `<location>`. If the description matches your current task, call the `skill` tool with the skill's name to load it. The tool returns `<skill_content>` with the full instructions — follow them.
-
-### `<mcp_instructions>` — MCP server instructions
-
-Each `<server>` entry contains instructions for an MCP server. These describe how to use the server's tools. Follow these instructions when using MCP tools.
-
-### `<system-reminder>` — System reminders
-
-Tool results and user messages may include `<system-reminder>` tags. These contain useful information and reminders. They are NOT part of the user's provided input or the tool result — they are system directives added by the runtime. Read them and follow any instructions they contain.
-
-### `Instructions from:` — Instruction files
-
-Lines prefixed with `Instructions from:` followed by file content are project-level instruction files (AGENTS.md, CLAUDE.md, etc.). Treat these as authoritative coding and workflow rules for the current project.
-
-### Code references
-
-When referencing specific functions or pieces of code, include the pattern `file_path:line_number` to allow the user to easily navigate to the source code location.
-
-### Editing
-
-Always use the `apply_patch` tool for manual code edits. Do not use `cat`, `echo`, or Python to create or edit files when `apply_patch` would suffice.
-
----
-
 ## Drift Controls — Skill Invocation Protocol
 
 ### Pre-Action Checklist (Mandatory)
