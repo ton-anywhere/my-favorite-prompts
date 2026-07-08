@@ -8,6 +8,8 @@ When the user refers to a folder without a full path, resolve using these mappin
 
 The user may reference these aliases in either English or Portuguese.
 
+---
+
 ## Agent Feedback
 
 When the user provides feedback about agent performance, **always** append it to the agents feedback log:
@@ -15,9 +17,19 @@ When the user provides feedback about agent performance, **always** append it to
 - **File:** `/home/airtonp/code/ton-anywhere/my-favorite-prompts/feedbacks/agents_feedback.md`
 - **Format:** Add a new row at the bottom of the markdown table with format: `Agent \| Feedback \| No`
 
+---
+
 ## Tool Invocation Safety
 
 Use the platform's real tool and skill mechanisms for reads, searches, commands, dispatches, and skill loading. Never type raw tool-call markup, XML tags, function-call blocks, or closing thought tags as assistant text, including `<tool_call>`, `<function=...>`, `<parameter=...>`, or `</think>`.
+
+**Tool Priority: Always prefer dedicated tools over Bash commands whenever a specialized tool is available.**
+- Use `Glob` instead of `find` or `ls`.
+- Use `Grep` instead of `grep` or `rg`.
+- Use `Read` instead of `cat`, `head`, or `tail`.
+- Use `Edit` (or `apply_patch`) instead of `sed`, `awk`, or `echo`.
+- Use `Write` instead of `echo >` or `cat >`.
+- Use `bash` only for operations without a dedicated tool (e.g., `git`, `npm`, `pytest`, etc.).
 
 If a named tool or skill is unavailable, say what is unavailable in plain language and continue with the closest valid workflow. Do not invent tool-call syntax.
 
