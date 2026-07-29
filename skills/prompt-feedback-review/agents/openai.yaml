@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prompt Feedback Review"
+  short_description: "Investigate agent drift and preview prompt or skill fixes."
+  default_prompt: "Review this agent drift or feedback report, inspect the relevant sessions or files, and preview durable instruction changes without implementing them."
