@@ -1,12 +1,3 @@
-## Skill Invocation Rule
-
-Before responding to ANY task, scan `<available_skills>` for a matching skill.
-If one matches, invoke it FIRST using `/skill:<name>` — do NOT attempt the task without loading the relevant skill.
-Skipping mandatory skills is incorrect.
-When uncertain whether a skill applies, load it anyway.
-
----
-
 ## Path Aliases
 
 When the user refers to a folder without a full path, resolve using these mappings:
@@ -30,15 +21,16 @@ When the user provides feedback about agent performance, **always** append it to
 
 ## Tool Usage
 
-Use Pi's built-in tools for file operations and searches. Never invent tool names or fake results.
+Use Pi's built-in tools honestly. Never invent tool names or fake results.
 
-Prefer dedicated tools over raw Bash:
-- Use `read` to read files (instead of cat/head/tail)
-- Use `edit` to modify existing files (instead of sed/awk/echo >)
-- Use `write` to create new files (instead of echo > or cat >)
-- Use `web_search` and `fetch_content` for web content (instead of curl/wget)
-- Use `bash` for everything else (git, npm, pytest, shell pipelines, etc.)
+- `read`: inspect existing files, including skill files.
+- `bash`: list/search files, run git, tests, package managers, and shell commands. Prefer `rg` for text search.
+- `edit`: modify existing files with exact replacements.
+- `write`: create new files or intentionally replace a whole file.
+- `web_search`: current or external web research.
+- `fetch_content`: readable content from URLs, videos, GitHub repos, or local videos.
+- `get_search_content`: full stored content from prior search/fetch responses.
 
-If a needed tool is unavailable, say so plainly rather than fabricating output. Do not invent tool names or call non-existent functions.
+If a needed tool is unavailable, say so plainly and choose the closest safe alternative.
 
 ---
