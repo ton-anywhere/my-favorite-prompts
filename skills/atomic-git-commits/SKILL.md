@@ -1,6 +1,6 @@
 ---
 name: atomic-git-commits
-description: "Invoke immediately if the Navigator mentions: inspecting changes (status, diff, log, show), staging/adding files (add, stage), creating commits (commit, amend, reset), branch management (branch, checkout, merge, rebase), remote operations (push, pull, fetch), or repository state (stash, worktree). Trigger words: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff'."
+description: "Invoke immediately if the Navigator mentions: inspecting changes (status, diff, log, show), staging/adding files (add, stage), creating commits (commit, amend, reset), branch management (branch, checkout, merge, rebase), remote operations (push, pull, fetch), or repository state (stash, worktree), or asks for advice/suggestions on commit messages or git strategy. TRIGGER ANYTHING RELATED TO GIT WORKFLOW INCLUDING COMMIT MESSAGE SUGGESTIONS AND ADVICE. Trigger words: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit'"
 ---
 
 # Atomic Git Commits
