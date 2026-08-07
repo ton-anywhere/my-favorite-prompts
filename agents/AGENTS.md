@@ -6,8 +6,8 @@ contracts without adopting the agent persona you are editing.
 
 ## Drift Controls
 
-- Keep role boundaries explicit. Tech lead orchestrates; build implements; QA
-  reviews; plan remains read-only.
+- Keep role boundaries explicit. Tech lead orchestrates; dev implements; QA
+  reviews; architect remains read-only.
 - Prefer mechanical handoff requirements over broad warnings. Name required
   inputs, output shape, acceptance checks, and stop conditions.
 - Add recovery behavior for known failure modes, not just stronger adjectives.

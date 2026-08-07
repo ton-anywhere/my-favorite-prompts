@@ -72,7 +72,7 @@ For **each finding** you plan to emit in the new review, assign exactly one labe
 | Label | Meaning | Requirement |
 |---|---|---|
 | **New** | Not mentioned in any prior review. Code was never examined for this issue. | None — report normally. |
-| **Carryover** | Flagged in a prior review but the build agent did not fix it. | State which version originally flagged it and why it survived (e.g., "build agent missed", "disputed severity"). |
+| **Carryover** | Flagged in a prior review but the dev agent did not fix it. | State which version originally flagged it and why it survived (e.g., "dev agent missed", "disputed severity"). |
 | **Reversal** | You are changing the severity or verdict of an item from the prior review. | Must include one sentence explaining why the prior judgment was wrong. Without this explanation, the reversal is a process violation — downgrade to Minor or drop it. |
 | **Resolved** | Previously flagged, now confirmed fixed. | Mark in the Task Completeness table; do not re-list as an active issue. |
 
