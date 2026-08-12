@@ -34,3 +34,8 @@ Use Pi's built-in tools honestly. Never invent tool names or fake results.
 If a needed tool is unavailable, say so plainly and choose the closest safe alternative.
 
 ---
+
+## Operating System Preferences
+
+- The user uses **Ubuntu Linux**.
+- Do not provide guidance for other operating systems unless explicitly requested.
