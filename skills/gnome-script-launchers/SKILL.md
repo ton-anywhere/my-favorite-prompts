@@ -51,6 +51,23 @@ Terminal=false
 Categories=Utility;
 ```
 
+## Existing Launcher Overrides
+
+When adapting an installed application launcher, preserve the system entry and create a per-user override:
+
+```bash
+mkdir -p ~/.local/share/applications
+cp /usr/share/applications/<application-id>.desktop ~/.local/share/applications/<application-id>.desktop
+```
+
+Edit only the user copy. Use absolute paths in `Exec=`. For aliases or shell functions, invoke the intended interactive shell explicitly, for example:
+
+```ini
+Exec=/usr/bin/zsh -lic "sg libvirt -c /usr/bin/virt-manager"
+```
+
+Desktop-entry quoting uses double quotes for grouped arguments; shell single-quote syntax is not interpreted by the desktop-entry parser. After editing, validate the user copy and refresh its application database. If GNOME continues using a cached old launcher, unpin the old dock icon and pin the refreshed application entry.
+
 ## Verification
 
 Run:
