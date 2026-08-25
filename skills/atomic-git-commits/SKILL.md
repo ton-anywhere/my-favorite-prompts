@@ -56,9 +56,8 @@ docs: add small model decode optimization guide
 
 Avoid vague subjects such as `fix bug`, `update files`, `misc changes`, or `work in progress`.
 
-## Add a Body only when needed
+## Add a Body only when requested
 
-Use a body when the subject cannot explain the *why* or a non-obvious tradeoff. 
 - Separate it with a blank line.
 - Wrap at 72 characters.
 - Do not repeat the diff in the body.
