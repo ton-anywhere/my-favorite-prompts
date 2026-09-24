@@ -21,6 +21,7 @@ skill; it does not replace or weaken any rule in this file.
 3.  **Coherent Purpose:** Every commit must have one clear goal. If you find yourself using the word "and" in your commit message to join two different actions (e.g., "fix login and update footer"), you should probably split it into two commits.
 4.  **Independent Entities:** Even if files are in the same directory or share a category, if they represent different entities (e.g., two different agents, two different skills), they MUST be in separate commits.
 5.  **Future-Proofing:** Write the commit as a letter to your future self. Assume the reader doesn't have the context of your current thought process. Answer: *Why* was this change needed? *What* effect does it have?
+6.  **Moves and Renames:** Never combine a file move or rename with content changes to that file in one commit. Commit the move or rename first, with the file content unchanged, then commit the content changes separately. This keeps the move visible in the diff and helps Git recognize it as a rename instead of a deletion and addition.
 
 ## Commit Workflow
 
