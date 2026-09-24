@@ -1,6 +1,7 @@
 ---
 name: mitmproxy-web
 description: Inspect and debug local mitmweb/mitmproxy HTTP flows, especially OpenAI-compatible or llama.cpp request/response captures, authenticated mitmweb URLs, SSE streams, request payloads, response field shapes, headers, and missing reasoning/thinking fields. Use when the user gives a mitmweb URL, flow ID, mitmproxy web token, or asks to debug proxied API requests/responses.
+disable-model-invocation: true
 ---
 
 # Mitmproxy Web

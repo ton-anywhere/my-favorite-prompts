@@ -4,6 +4,7 @@ description: Use when investigating opencode sessions, subsessions, agent drift,
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
+disable-model-invocation: true
 ---
 
 # OpenCode Session Investigation

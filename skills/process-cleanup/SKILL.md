@@ -1,6 +1,7 @@
 ---
 name: process-cleanup
 description: Use when auditing local Linux processes for memory or CPU cleanup candidates, especially to preserve i2p, Tor, Bitcoin, Syncthing, VM processes, active SSH/autossh bridges, and system services while suggesting graceful stop commands for non-essential apps or helpers.
+disable-model-invocation: true
 ---
 
 # Process Cleanup

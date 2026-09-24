@@ -1,6 +1,7 @@
 ---
 name: gnome-script-launchers
 description: Use when creating, updating, troubleshooting, or organizing Ubuntu GNOME dock buttons, .desktop launchers, Zenity control menus, script shortcuts, launcher icons, or taskbar actions for commands stored across multiple projects.
+disable-model-invocation: true
 ---
 
 # GNOME Script Launchers

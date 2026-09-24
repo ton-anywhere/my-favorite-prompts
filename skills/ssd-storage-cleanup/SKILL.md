@@ -1,6 +1,7 @@
 ---
 name: ssd-storage-cleanup
 description: Use when the user asks to audit or reclaim SSD storage on this Linux machine, including package caches, journals, Snap revisions, or Docker build cache.
+disable-model-invocation: true
 ---
 
 # SSD Storage Cleanup
