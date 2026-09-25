@@ -1,0 +1,4 @@
+interface:
+  display_name: "Autonomous Git Commits"
+  short_description: "Create focused commits without per-commit approval"
+  default_prompt: "Use $autonomous-git-commits to create atomic commits for the changes in this task."
