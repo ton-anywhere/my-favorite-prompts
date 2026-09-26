@@ -1,11 +1,21 @@
 ---
 name: atomic-git-commits
-description: "Invoke immediately if the Navigator mentions: inspecting changes (status, diff, log, show), staging/adding files (add, stage), creating commits (commit, amend, reset), branch management (branch, checkout, merge, rebase), remote operations (push, pull, fetch), or repository state (stash, worktree), or asks for advice/suggestions on commit messages or git strategy. TRIGGER ANYTHING RELATED TO GIT WORKFLOW INCLUDING COMMIT MESSAGE SUGGESTIONS AND ADVICE. Trigger words: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit'"
+description: "Invoke immediately for ANY git workflow: inspecting (status/diff/log/show), staging (add/stage), committing (commit/amend/reset), branch mgmt (branch/checkout/merge/rebase), remotes (push/pull/fetch), or repo state (stash/worktree). Also on commit-message advice, suggestions, or 'good commit message'. TRIGGER on: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit', 'make a commit'. This skill is AUTHORITATIVE for commit-message format and MUST be followed even when the user only says 'commit' or 'save changes'."
 ---
 
 # Atomic Git Commits
 
 Create small commits with self-contained intent and consistently useful messages. Treat these rules as authoritative; do not infer style from repository history, which may be noisy or inconsistent.
+
+## STOP GATE — READ BEFORE ANY GIT COMMAND
+
+**Before you run or report any git command (status, add, commit, amend, push, etc.), you MUST:**
+
+1.  **Load this file in full** (`read` the `atomic-git-commits/SKILL.md`). Do not work from memory or a one-line description — the detailed rules (especially Conventional Commits) are only enforced here.
+2.  **Comply with every rule below** before executing the command. If your planned commit message does not match the format, do not commit yet — fix it first.
+3.  **Self-audit the result.** After any commit, verify the subject matches the pattern `^(feat|fix|docs|test|refactor|perf|chore|build|ci|style|revert)(\([^)]+\))?!:\s+.+$` and uses lowercase imperative mood with no trailing punctuation. If it does not, amend it until it does.
+
+This gate exists because a plain prompt like "commit" is still a git-workflow task that requires these rules. Never treat it as a shortcut.
 
 ## Small-Model Profile
 
@@ -68,4 +78,4 @@ Avoid vague subjects such as `fix bug`, `update files`, `misc changes`, or `work
 - If asked only for suggestions, do not stage or commit.
 - If asked to proceed with one commit, do not silently create the rest.
 - Do not impose unrelated checks on documentation or configuration the user has already validated.
-- After committing, report the short hash and subject concisely.
+- After committing, run the STOP GATE self-audit: confirm the subject matches `^(feat|fix|docs|test|refactor|perf|chore|build|ci|style|revert)(\([^)]+\))?!:\s+.+$`, lowercase imperative, no trailing punctuation. Amend if it fails, then report the short hash and subject concisely.
