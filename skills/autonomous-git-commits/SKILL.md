@@ -27,10 +27,10 @@ skill; it does not replace or weaken any rule in this file.
 ## Commit Workflow
 
 1.  **Inspection:** Inspect the working tree and relevant diffs. Do not use prior commit messages as a style source.
-2.  **Grouping:** Group changes by a single coherent purpose (Principles 1 & 3). If a change is not tightly coupled to the others, it must be separated.
+2.  **Grouping:** Apply Principle 4 before grouping by purpose. A shared feature or workflow does not make independent artifacts one commit. Group files only when they cannot be understood or reverted independently.
 3.  **Planning:** For multi-step tasks, list the proposed commits in execution order before starting. This ensures the correct sequence of dependencies.
 4.  **Staging:** Stage only the files relevant to the current atomic commit (Principle 2). Preserve unrelated staged or untracked work.
-5.  **Autonomous commits:** When the user requests repository changes under this skill, commit the completed task changes in atomic groups without asking for approval for each commit. Do not include pre-existing or unrelated changes. Follow any limit the user sets on commits.
+5.  **Autonomous commits:** When the user requests repository changes under this skill, commit the completed task changes in atomic groups without asking for approval or a decision during the run. When the user asks to commit all unstaged changes, treat every tracked unstaged change as task-owned. Do not exclude a change because its style, formatting, or inferred intent seems unusual. Follow any limit the user sets on commits.
 
 ## Write the Subject
 
@@ -68,6 +68,10 @@ Avoid vague subjects such as `fix bug`, `update files`, `misc changes`, or `work
 
 - If asked only for suggestions, do not stage or commit.
 - If asked to proceed with one commit, do not silently create the rest.
-- Do not push, rewrite history, or discard work unless the user authorized that operation.
+- Keep autonomous commits local.
+- Make the best supported local decision about grouping and staging. Report material assumptions and decisions after the work is complete; do not ask the user to resolve them during a non-interactive run.
+- Before staging, record any pre-existing staged changes so recovery can restore their staged state.
+- If a patch or Git command fails, inspect `git status --short`, `git diff`, `git diff --cached`, and `git log -1 --oneline`. Repair the current state forward. Do not use a generic Git reset as recovery.
+- Recover with working-tree edits and forward commits.
 - Do not impose unrelated checks on documentation or configuration the user has already validated.
 - After committing, report the short hash and subject concisely.
