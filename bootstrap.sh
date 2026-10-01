@@ -6,8 +6,20 @@ SUPERPOWERS_DIR="$ROOT/superpowers"
 LAMBDATEST_AGENT_SKILLS_DIR="$ROOT/lambdatest-agent-skills"
 IMPECCABLE_DIR="$ROOT/impeccable"
 SKILLS_DIR="$ROOT/skills"
+AGENTS_SKILLS_DIR="$ROOT/agents-skills"
 AGENTS_SKILLS="$HOME/.agents/skills"
 OPENCODE_AGENTS_SKILLS="$HOME/.opencode/skills"
+EXCLUDED_SKILLS=(
+  autonomous-git-commits
+)
+
+is_excluded_skill() {
+  local excluded
+  for excluded in "${EXCLUDED_SKILLS[@]}"; do
+    [[ "$1" != "$excluded" ]] || return 0
+  done
+  return 1
+}
 
 if [[ -d "$SUPERPOWERS_DIR/.git" ]]; then
   git -C "$SUPERPOWERS_DIR" pull --ff-only origin main
@@ -27,19 +39,23 @@ else
   git clone https://github.com/pbakaus/impeccable.git "$IMPECCABLE_DIR"
 fi
 
-if [[ -e "$AGENTS_SKILLS" && ! -L "$AGENTS_SKILLS" ]]; then
-  echo "Refusing to replace existing non-symlink: $AGENTS_SKILLS" >&2
-  exit 1
-fi
-
 # populate canonical skills dir
 ln -sfn ../lambdatest-agent-skills/rspec-skill "$SKILLS_DIR/rspec-skill"
 ln -sfn "$IMPECCABLE_DIR/.agents/skills/impeccable" "$SKILLS_DIR/impeccable"
 bash "$ROOT/flatten_superpowers.sh"
 
-# syslink canonical skills dir
+mkdir -p "$AGENTS_SKILLS_DIR"
+find "$AGENTS_SKILLS_DIR" -maxdepth 1 -type l -delete
+
+for skill in "$SKILLS_DIR"/*; do
+  [[ -d "$skill" ]] || continue
+  name="${skill##*/}"
+  is_excluded_skill "$name" && continue
+  ln -sfn "../skills/$name" "$AGENTS_SKILLS_DIR/$name"
+done
+
 mkdir -p "$HOME/.agents"
-ln -sfn "$SKILLS_DIR" "$AGENTS_SKILLS"
+ln -sfn "$AGENTS_SKILLS_DIR" "$AGENTS_SKILLS"
 
 # syslink custom opencode skills
 mkdir -p "$OPENCODE_AGENTS_SKILLS"

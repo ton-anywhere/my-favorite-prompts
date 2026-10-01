@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_DIR="$REPO_ROOT/skills"
+SKILLS_DIR="$REPO_ROOT/agents-skills"
 SUPERPOWERS_SKILLS_DIR="$REPO_ROOT/superpowers/skills"
 
 die() {
