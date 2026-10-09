@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -214,6 +215,228 @@ class CommitPatchTest(unittest.TestCase):
                         '--message', 'fix(settings): increase timeout', '--amend')
         self.assertEqual(self.git('show', 'HEAD:settings.txt').decode(), self.snapshot.read_text())
         self.assertEqual(self.git('rev-list', '--count', 'HEAD').strip(), b'1')
+
+    def test_seventy_character_subject_is_accepted(self):
+        digest = self.prepare()
+        self.stage(digest)
+        message = 'fix(settings): increase timeout for slow connections to the API server'
+        self.assertEqual(len(message), 70)
+        self.run_helper('commit', self.patch, '--reviewed-sha256', digest, '--message', message)
+        self.assertEqual(self.git('log', '-1', '--format=%s').decode().strip(), message)
+
+    def test_seventy_one_character_subject_is_rejected(self):
+        digest = self.prepare()
+        self.stage(digest)
+        before = self.git('rev-parse', 'HEAD')
+        message = 'fix(settings): increase timeout for slow connections to the API servers'
+        self.assertEqual(len(message), 71)
+        result = self.run_helper('commit', self.patch, '--reviewed-sha256', digest,
+                                 '--message', message, ok=False)
+        self.assertIn('71', result.stderr)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), before)
+
+    def test_checksum_file_supports_complete_commit_workflow(self):
+        digest = self.prepare()
+        checksum = self.root / 'review.sha256'
+        review = self.run_helper('review', self.patch, '--sha256-file', checksum)
+        self.assertIn(self.patch.read_text(), review.stdout)
+        self.assertEqual(checksum.read_text(), digest + '\n')
+        staged = self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum)
+        self.assertNotIn('diff --git', staged.stdout)
+        verified = self.run_helper('verify', self.patch, '--reviewed-sha256-file', checksum)
+        self.assertIn('+timeout=60', verified.stdout)
+        committed = self.run_helper('commit', self.patch, '--reviewed-sha256-file', checksum,
+                                     '--message', 'fix(settings): increase timeout')
+        self.assertNotIn('diff --git', committed.stdout)
+        self.assertEqual(self.git('show', 'HEAD:settings.txt').decode(), self.snapshot.read_text())
+
+    def test_review_preserves_existing_checksum_file(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        checksum.write_text('earlier review\n')
+        result = self.run_helper('review', self.patch, '--sha256-file', checksum, ok=False)
+        self.assertIn('already exists', result.stderr)
+        self.assertEqual(checksum.read_text(), 'earlier review\n')
+
+    def test_broken_review_output_does_not_save_checksum(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        read_fd, write_fd = os.pipe()
+        os.close(read_fd)
+        try:
+            result = subprocess.run([sys.executable, str(SCRIPT), 'review', str(self.patch),
+                                     '--sha256-file', str(checksum)], cwd=self.repo,
+                                    stdout=write_fd, stderr=subprocess.PIPE)
+        finally:
+            os.close(write_fd)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(checksum.exists())
+
+    def test_changed_patch_is_rejected_with_checksum_file(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.run_helper('review', self.patch, '--sha256-file', checksum)
+        self.patch.write_text(self.patch.read_text().replace('+timeout=60', '+timeout=90'))
+        result = self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum, ok=False)
+        self.assertIn('saved patch changed', result.stderr.lower())
+        self.assertEqual(self.git('diff', '--cached'), b'')
+
+    def test_truncated_checksum_reports_length_and_preserves_index(self):
+        digest = self.prepare()
+        before = self.git('write-tree')
+        result = self.run_helper('stage', self.patch, '--reviewed-sha256', digest[:59], ok=False)
+        self.assertIn('59', result.stderr)
+        self.assertIn('64', result.stderr)
+        self.assertEqual(self.git('write-tree'), before)
+
+    def test_wrong_checksum_file_preserves_index(self):
+        self.prepare()
+        checksum = self.root / 'wrong.sha256'
+        checksum.write_text('0' * 64 + '\n')
+        before = self.git('write-tree')
+        result = self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum, ok=False)
+        self.assertIn('does not match', result.stderr)
+        self.assertEqual(self.git('write-tree'), before)
+
+    def test_relative_checksum_file_resolves_from_invocation_directory(self):
+        self.prepare()
+        nested = self.repo / 'nested'
+        nested.mkdir()
+        for arguments in [('review', self.patch, '--sha256-file', 'review.sha256'),
+                          ('stage', self.patch, '--reviewed-sha256-file', 'review.sha256')]:
+            result = subprocess.run([sys.executable, str(SCRIPT), *map(str, arguments)],
+                                    cwd=nested, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.git('show', ':settings.txt').decode(), self.snapshot.read_text())
+
+    def review_pages(self, command, checksum):
+        for page in range(1, 100):
+            option = '--sha256-file' if command == 'review' else '--reviewed-sha256-file'
+            result = self.run_helper(command, self.patch, option, checksum, '--page', page)
+            if 'complete' in result.stdout.lower():
+                return
+        self.fail('Paged review did not finish')
+
+    def test_paged_review_delays_checksum_until_every_page_is_printed(self):
+        self.snapshot.write_text(''.join(f'setting_{i}=value\n' for i in range(180)))
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        first = self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        self.assertIn('+setting_0=value', first.stdout)
+        self.assertNotIn('+setting_179=value', first.stdout)
+        self.assertFalse(checksum.exists())
+        self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum, ok=False)
+        for page in (2, 3):
+            self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', page)
+        self.assertTrue(checksum.exists())
+        self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum)
+        self.assertEqual(self.git('show', ':settings.txt').decode(), self.snapshot.read_text())
+
+    def test_paged_review_rejects_skipped_pages(self):
+        self.snapshot.write_text(''.join(f'setting_{i}=value\n' for i in range(180)))
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 3, ok=False)
+        self.assertFalse(checksum.exists())
+
+    def test_paged_workflow_requires_staged_diff_delivery_before_commit(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum)
+        before = self.git('rev-parse', 'HEAD')
+        error = self.run_helper('commit', self.patch, '--reviewed-sha256-file', checksum,
+                                '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertIn(' verify ', error.stderr)
+        self.assertIn('--page 1', error.stderr)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), before)
+        self.review_pages('verify', checksum)
+        self.run_helper('commit', self.patch, '--reviewed-sha256-file', checksum,
+                        '--message', 'fix(settings): increase timeout')
+        self.assertEqual(self.git('show', 'HEAD:settings.txt').decode(), self.snapshot.read_text())
+
+    def test_partial_staged_diff_delivery_blocks_commit(self):
+        self.snapshot.write_text(''.join(f'setting_{i}=value\n' for i in range(180)))
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum)
+        self.run_helper('verify', self.patch, '--reviewed-sha256-file', checksum, '--page', 1)
+        before = self.git('rev-parse', 'HEAD')
+        error = self.run_helper('commit', self.patch, '--reviewed-sha256-file', checksum,
+                                '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertIn('--page 2', error.stderr)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), before)
+
+    def test_verify_with_empty_index_reports_stage_as_next_step(self):
+        digest = self.prepare()
+        result = self.run_helper('verify', self.patch, '--reviewed-sha256', digest, ok=False)
+        self.assertIn('Nothing is staged', result.stderr)
+        self.assertIn(' stage ', result.stderr)
+
+    def test_missing_checksum_reports_review_as_next_step(self):
+        self.prepare()
+        result = self.run_helper('stage', self.patch, '--reviewed-sha256-file',
+                                 self.root / 'missing.sha256', ok=False)
+        self.assertIn(' review ', result.stderr)
+        self.assertEqual(self.git('diff', '--cached'), b'')
+
+    def test_page_progress_is_not_saved_when_output_pipe_breaks(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        read_fd, write_fd = os.pipe()
+        os.close(read_fd)
+        try:
+            result = subprocess.run([sys.executable, str(SCRIPT), 'review', str(self.patch),
+                                     '--sha256-file', str(checksum), '--page', '1'], cwd=self.repo,
+                                    stdout=write_fd, stderr=subprocess.PIPE)
+        finally:
+            os.close(write_fd)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(checksum.exists())
+        result = self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        self.assertIn('+timeout=60', result.stdout)
+
+    def test_paged_review_cannot_switch_to_changed_patch_and_metadata(self):
+        self.snapshot.write_text(''.join(f'setting_{i}=value\n' for i in range(180)))
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        replacement = self.root / 'replacement.patch'
+        self.snapshot.write_text(self.snapshot.read_text().replace('setting_0=value', 'setting_0=other'))
+        self.run_helper('prepare', replacement, '--file', 'settings.txt', self.snapshot)
+        self.patch.write_bytes(replacement.read_bytes())
+        self.patch.with_name(self.patch.name + '.json').write_bytes(
+            replacement.with_name(replacement.name + '.json').read_bytes())
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 2, ok=False)
+        self.assertFalse(checksum.exists())
+
+    def test_paged_review_bounds_long_lines_without_losing_unicode_content(self):
+        self.snapshot.write_text('description=' + 'é' * 6000 + '\n')
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        delivered = ''
+        for page in range(1, 20):
+            result = self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', page)
+            self.assertLess(len(result.stdout.encode()), 9000)
+            payload = result.stdout.split('\n', 1)[1]
+            if '\nReview delivery complete.' in payload:
+                delivered += payload.split('\nReview delivery complete.', 1)[0]
+                break
+            delivered += payload.split('\nRead this page. Next:', 1)[0]
+        self.assertEqual(delivered, self.patch.read_text())
+
+    def test_final_review_can_resume_if_checksum_creation_was_interrupted(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        checksum.unlink()
+        error = self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum, ok=False)
+        self.assertIn('--page 1', error.stderr)
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        self.run_helper('stage', self.patch, '--reviewed-sha256-file', checksum)
+        self.assertEqual(self.git('show', ':settings.txt').decode(), self.snapshot.read_text())
 
 
 if __name__ == '__main__':
