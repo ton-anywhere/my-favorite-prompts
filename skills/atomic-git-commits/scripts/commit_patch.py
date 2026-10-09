@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -49,11 +50,93 @@ def metadata_path(patch):
     return patch.with_name(patch.name + '.json')
 
 
+def next_command(command, patch, *arguments):
+    return shlex.join([sys.executable, str(Path(__file__).resolve()), command,
+                       str(patch), *map(str, arguments)])
+
+
+def checksum_arguments(args):
+    if args.reviewed_sha256_file:
+        return ['--reviewed-sha256-file', args.reviewed_sha256_file]
+    return ['--reviewed-sha256', args.reviewed_sha256]
+
+
+def progress_path(checksum, kind):
+    return Path(str(checksum) + f'.{kind}.json')
+
+
+def read_progress(checksum, kind):
+    path = progress_path(checksum, kind)
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def progress_identity(content, record):
+    return {'patch_sha256': record['sha256'],
+            'content_sha256': hashlib.sha256(content).hexdigest(),
+            'head': record['head'], 'target_tree': record['target_tree']}
+
+
+def require_delivery(checksum, kind, content, record, patch):
+    progress = read_progress(checksum, kind)
+    identity = progress_identity(content, record)
+    if progress and any(progress.get(key) != value for key, value in identity.items()):
+        raise PatchError('Review content or base state changed. Preserve work and prepare a new patch and review checksum file.')
+    if not progress or progress['next_page'] != progress['total_pages'] + 1:
+        page = progress['next_page'] if progress else 1
+        option = '--sha256-file' if kind == 'review' else '--reviewed-sha256-file'
+        raise PatchError(f'Complete the paged {kind} before continuing. Next: ' + next_command(
+            kind, patch, option, checksum, '--page', page))
+
+
+def print_page(content, record, checksum, kind, page, patch):
+    pages = []
+    start = 0
+    while start < len(content):
+        end = min(start + 8000, len(content))
+        lines = content[start:end].splitlines(keepends=True)
+        if len(lines) > 80:
+            end = start + len(b''.join(lines[:80]))
+        elif end < len(content) and b'\n' in content[start:end]:
+            end = start + content[start:end].rfind(b'\n') + 1
+        boundary = end
+        while end < len(content) and end > start and content[end] & 0xc0 == 0x80:
+            end -= 1
+        if end == start:
+            end = boundary
+        pages.append(content[start:end])
+        start = end
+    identity = progress_identity(content, record)
+    progress = read_progress(checksum, kind)
+    expected = progress['next_page'] if progress else 1
+    if kind == 'review' and progress and not Path(checksum).exists():
+        # Final output can succeed before checksum creation is interrupted.
+        expected = min(expected, progress['total_pages'])
+    if progress and any(progress.get(key) != value for key, value in identity.items()):
+        raise PatchError('Review content or base state changed. Preserve earlier artifacts and start a new review checksum file.')
+    if page != expected or not 1 <= page <= len(pages):
+        raise PatchError(f'Expected {kind} page {expected} of {len(pages)}; received {page}.')
+    print(f'{kind.capitalize()} page {page}/{len(pages)} | SHA256 {record["sha256"]}', flush=True)
+    sys.stdout.buffer.write(pages[page - 1])
+    sys.stdout.buffer.flush()
+    complete = page == len(pages)
+    if complete:
+        print(f'\n{kind.capitalize()} delivery complete. Read this page before continuing.')
+    else:
+        option = '--sha256-file' if kind == 'review' else '--reviewed-sha256-file'
+        print('\nRead this page. Next: ' + next_command(kind, patch, option, checksum, '--page', page + 1))
+    sys.stdout.flush()
+    # Record only flushed output. A broken pipe leaves the page available to retry.
+    path = progress_path(checksum, kind)
+    with path.open('w' if progress else 'x') as destination:
+        json.dump({**identity, 'next_page': page + 1, 'total_pages': len(pages)}, destination)
+    return complete
+
+
 def prepare(args, root):
     patch = Path(args.patch).absolute()
     receipt = metadata_path(patch)
     if patch.exists() or receipt.exists():
-        raise PatchError('Patch or metadata already exists; use a new patch name.')
+        raise PatchError('Patch or metadata already exists; preserve both and use a new patch name in a fresh mktemp directory.')
     base = index_tree()
     revision = head()
     committed = output('rev-parse', 'HEAD^{tree}') if revision else output('mktree', data=b'')
@@ -107,6 +190,7 @@ def prepare(args, root):
         json.dump(record, destination, indent=2)
         destination.write('\n')
     print(f'Prepared {patch}\nSHA256 {digest}\nReview the complete patch before staging.')
+    print('Next: ' + next_command('review', patch, '--sha256-file', str(patch) + '.sha256', '--page', 1))
 
 
 def load(args, root):
@@ -118,8 +202,18 @@ def load(args, root):
     if digest != record['sha256']:
         raise PatchError('The saved patch changed. Prepare and review a new patch.')
     supplied = getattr(args, 'reviewed_sha256', None)
+    checksum_file = getattr(args, 'reviewed_sha256_file', None)
+    if checksum_file is not None:
+        if not Path(checksum_file).exists():
+            progress = read_progress(checksum_file, 'review')
+            page = min(progress['next_page'], progress['total_pages']) if progress else 1
+            raise PatchError('Review checksum is not ready. Next: ' + next_command(
+                'review', patch, '--sha256-file', checksum_file, '--page', page))
+        supplied = Path(checksum_file).read_text().strip()
+    if supplied is not None and not re.fullmatch(r'[0-9a-f]{64}', supplied):
+        raise PatchError(f'Expected 64 lowercase hexadecimal characters for the reviewed SHA256; received {len(supplied)} characters. Use the checksum file saved by review to avoid transcription errors.')
     if supplied is not None and supplied != digest:
-        raise PatchError('The reviewed SHA256 does not match this patch.')
+        raise PatchError('The reviewed SHA256 does not match this patch. Check that you used the checksum from this patch review; preserve the patch and index.')
     committed = output('rev-parse', f'{record["head"]}^{{tree}}') if record['head'] else output('mktree', data=b'')
     if record['base_tree'] != committed:
         raise PatchError('Patch metadata does not match its base commit.')
@@ -130,6 +224,8 @@ def load(args, root):
         git('apply', '--cached', '--whitespace=error', str(patch), environment=environment)
         if output('write-tree', environment=environment) != record['target_tree']:
             raise PatchError('Patch metadata target does not match the reviewed patch.')
+    if checksum_file and read_progress(checksum_file, 'review'):
+        require_delivery(checksum_file, 'review', patch.read_bytes(), record, patch)
     return patch, record
 
 
@@ -151,9 +247,27 @@ def run(args, root):
         return
     patch, record = load(args, root)
     if args.command == 'review':
-        sys.stdout.buffer.write(patch.read_bytes())
-        sys.stdout.buffer.flush()
-        print(f'\nSHA256 {record["sha256"]}')
+        checksum_file = Path(args.sha256_file) if args.sha256_file else None
+        if checksum_file is not None and checksum_file.exists():
+            raise PatchError('Checksum file already exists; use a new review file name.')
+        if args.page is not None:
+            if checksum_file is None:
+                raise PatchError('Paged review requires --sha256-file.')
+            if not print_page(patch.read_bytes(), record, checksum_file, 'review', args.page, patch):
+                return
+        else:
+            if checksum_file and read_progress(checksum_file, 'review'):
+                raise PatchError('Continue the paged review with --page; preserve its progress.')
+            sys.stdout.buffer.write(patch.read_bytes())
+            sys.stdout.buffer.flush()
+            print(f'\nSHA256 {record["sha256"]}')
+            sys.stdout.flush()
+        if checksum_file is not None:
+            # A broken output pipe must fail before a review checksum is saved.
+            with checksum_file.open('x') as destination:
+                destination.write(record['sha256'] + '\n')
+            print(f'Checksum saved to {checksum_file}. Read the complete patch before staging.')
+            print('Next: ' + next_command('stage', patch, '--reviewed-sha256-file', checksum_file))
         return
     if args.command == 'stage':
         require_head(record)
@@ -161,16 +275,41 @@ def run(args, root):
             raise PatchError('The index changed after preparation. Preserve staged work and prepare a new patch after resolving it.')
         git('apply', '--cached', '--check', '--whitespace=error', str(patch))
         git('apply', '--cached', '--whitespace=error', str(patch))
+    elif index_tree() == record['base_tree']:
+        raise PatchError('Nothing is staged. Next: ' + next_command('stage', patch, *checksum_arguments(args)))
     verify(record)
-    sys.stdout.buffer.write(git('diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv').stdout)
-    sys.stdout.buffer.flush()
+    checksum_file = args.reviewed_sha256_file
+    paged = checksum_file and read_progress(checksum_file, 'review')
+    staged_diff = git('diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv').stdout
+    if args.command == 'verify':
+        if paged:
+            if args.page is None:
+                progress = read_progress(checksum_file, 'verify')
+                page = progress['next_page'] if progress else 1
+                raise PatchError('Paged verification required. Next: ' + next_command(
+                    'verify', patch, *checksum_arguments(args), '--page', page))
+            if not print_page(staged_diff, record, checksum_file, 'verify', args.page, patch):
+                return
+        else:
+            if args.page is not None:
+                raise PatchError('Start with review --page 1 --sha256-file to use paged verification.')
+            sys.stdout.buffer.write(staged_diff)
+            sys.stdout.buffer.flush()
     if args.command != 'commit':
         print(f'Verified staged tree for SHA256 {record["sha256"]}')
+        if args.command == 'stage':
+            page_arguments = ['--page', '1'] if paged else []
+            print('Next: ' + next_command('verify', patch, *checksum_arguments(args), *page_arguments))
+        else:
+            print('Read the complete staged diff. Once authorized, next: ' + next_command(
+                'commit', patch, *checksum_arguments(args), '--message', 'TYPE(SCOPE): imperative subject'))
         return
+    if paged:
+        require_delivery(checksum_file, 'verify', staged_diff, record, patch)
     message = args.message
     pattern = r'(feat|fix|docs|test|refactor|perf|chore|build|ci|style|revert)(\([^)\n]+\))?!?: [a-z][^\n]*'
-    if not re.fullmatch(pattern, message) or len(message) > 50 or message.endswith(('.', '!', '?')):
-        raise PatchError('Use a Conventional Commit subject of at most 50 characters, with a lowercase imperative verb and no body or trailing punctuation.')
+    if not re.fullmatch(pattern, message) or len(message) > 70 or message.endswith(('.', '!', '?')):
+        raise PatchError(f'Use a Conventional Commit subject of at most 70 characters, with a lowercase imperative verb and no body or trailing punctuation. Received {len(message)} characters.')
     arguments = ['commit', '-m', message]
     if args.amend:
         arguments.append('--amend')
@@ -191,14 +330,23 @@ def main():
         if name == 'prepare':
             command.add_argument('--file', nargs=2, action='append', default=[], metavar=('REPO_PATH', 'CONTENT_FILE'))
             command.add_argument('--delete', action='append', default=[], metavar='REPO_PATH')
+        if name == 'review':
+            command.add_argument('--sha256-file', help='Save the checksum to a new file after printing the complete patch')
+        if name in ('review', 'verify'):
+            command.add_argument('--page', type=int, help='Print the next bounded page and track delivery; start at 1')
         if name in ('stage', 'verify', 'commit'):
-            command.add_argument('--reviewed-sha256', required=True, help='SHA256 from the complete patch review')
+            checksum = command.add_mutually_exclusive_group(required=True)
+            checksum.add_argument('--reviewed-sha256', help='SHA256 from the complete patch review')
+            checksum.add_argument('--reviewed-sha256-file', help='Checksum file saved by review; read the complete patch before using it')
         if name == 'commit':
             command.add_argument('--message', required=True)
             command.add_argument('--amend', action='store_true')
     args = parser.parse_args()
     try:
         args.patch = str(Path(args.patch).absolute())
+        for attribute in ('sha256_file', 'reviewed_sha256_file'):
+            if getattr(args, attribute, None) is not None:
+                setattr(args, attribute, str(Path(getattr(args, attribute)).absolute()))
         if args.command == 'prepare':
             args.file = [(path, str(Path(snapshot).absolute())) for path, snapshot in args.file]
         root = Path(output('rev-parse', '--show-toplevel')).resolve()
