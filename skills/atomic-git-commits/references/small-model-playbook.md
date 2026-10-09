@@ -42,9 +42,9 @@ Split groups when any of these are true:
 - the proposed subject needs "and" to join separate actions;
 - one file contains unrelated hunks.
 
-When a file contains mixed changes, use patch staging and select only the relevant
-hunks. If safe hunk selection is unclear, stop and ask the user instead of staging
-the whole file.
+When a file contains mixed changes, prepare its intermediate content for the
+current group. Use the parent skill's required patch helper; do not stage the
+whole working file. If safe separation is unclear, preserve work and ask.
 
 For a multi-step task, show the proposed commit groups in execution order before
 staging.
@@ -66,18 +66,20 @@ permission for destructive operations or remote publication.
 
 ## 5. Stage Precisely
 
-Stage explicit paths or selected hunks. Do not use broad staging commands such as
-`git add .` or `git add -A` when unrelated changes exist.
+Use the parent skill's `commit_patch.py` workflow for each content commit:
+prepare one patch, review its complete content, stage it with the reviewed SHA256,
+and verify the complete staged diff. Use the absolute skill script path through
+`python3`; skill-relative paths do not change the shell's working directory.
 
-After staging, run `git diff --cached --stat` and `git diff --cached`. Confirm:
+Read the helper's full staged diff. Confirm:
 
 - every staged change belongs to the approved atomic group;
 - no unrelated file or hunk is staged;
 - the staged diff is complete enough to work on its own;
 - no secret, credential, generated artifact, or accidental debug output appears.
 
-If the staged diff is wrong, correct the index without discarding working-tree
-changes, then inspect it again.
+If a helper command fails, stop the commit sequence and inspect the failure.
+Preserve existing work. A later successful command does not cancel that failure.
 
 ## 6. Write the Commit Message
 
@@ -88,19 +90,19 @@ Use:
 ```
 
 Choose the narrowest accurate type. Use `feat` or `fix` for behavior changes and
-`docs` only when behavior is unchanged. Keep the subject lowercase, imperative,
-specific, and no longer than 50 characters. Do not end it with punctuation.
+`docs` only when behavior is unchanged. Use a lowercase imperative verb and a
+specific subject no longer than 50 characters. Preserve technical identifiers.
+Do not end the subject with punctuation.
 
-Add a body only when the reason or tradeoff is not obvious from the subject and
-diff. Wrap body lines at 72 characters.
+Do not include a commit message body.
 
 Before committing, verify that the message describes the staged diff and only the
 staged diff.
 
 ## 7. Commit Only When Authorized
 
-Create exactly one approved commit at a time. Do not amend, create additional
-commits, or commit another atomic group without separate authorization.
+Create exactly one approved commit at a time through the patch helper. Approval
+for a named sequence covers its groups; it does not cover additional groups.
 
 After the commit, inspect its result with `git status --short` and
 `git log -1 --oneline`. Report:
