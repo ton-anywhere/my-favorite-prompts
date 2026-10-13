@@ -4,6 +4,26 @@ Use this playbook when `SMALL_MODEL_PROFILE` is active or when choosing the patc
 helper. Use the file-reading tool to read it and the parent `SKILL.md` completely.
 Read any remaining ranges before issuing Git commands in a later tool call.
 
+## 0. Back Up Working Changes
+
+With `SMALL_MODEL_PROFILE` active, run this command once before the first Git
+mutation and again immediately before any authorized `git reset`. Replace
+`/absolute/skill` with this skill's absolute directory; run in the target repository:
+
+```sh
+python3 /absolute/skill/scripts/backup_work.py
+```
+
+Proceed only after exit code 0 and `BACKUP_OK stash=HASH head=HASH`. Save the full
+hashes for recovery and the final report. `stash=none` means the tree was clean.
+The script stashes staged, unstaged, and untracked work, applies it back with
+`--index`, verifies restoration, and keeps the stash. Ignored files are excluded.
+Git content transformations are rejected before stashing to preserve file bytes.
+On failure, stop; preserve the reported stash and current state.
+
+After a successful hard reset, restore the saved work using Section 6. A backup
+does not authorize a reset or discarding unrelated work.
+
 ## 1. Inspect and Plan Once
 
 Run `git status --short`. Read the relevant tracked diffs and complete untracked
@@ -23,7 +43,8 @@ Once the groups are clear, proceed with the authorized sequence.
 - A commit request authorizes the identified commit. Approval for a sequence covers
   its groups; continue without asking again for each group.
 - Push, pull, reset, rebase, merge, revert, stash, and branch switches require
-  authorization for that operation. A commit request does not authorize a push.
+  authorization for that operation. Step 0's backup is included in an authorized
+  mutation. A commit request does not authorize a push.
 
 Preserve unrelated working and staged changes. If ownership or safe separation is
 unclear, or unrelated work is already staged, preserve it and ask for the smallest
@@ -129,3 +150,19 @@ repair. Stop for unexpected changes that the recovery steps above do not explain
 After each commit, inspect `git status --short` and `git log -1 --oneline`.
 Continue with the next authorized group. Report each short hash and exact subject,
 plus remaining changes. Push only when authorized.
+Report backup stash hashes. Leave all backup stashes for the human to clean up.
+
+## 6. Recovering from Failures
+
+Inspect HEAD, status, and `git stash show --stat STASH_HASH` before recovery.
+Preserve current work; do not apply a backup blindly over existing changes.
+Untracked files can survive a hard reset and prevent a full stash apply.
+When restoration is needed and safe, use the recorded hash:
+
+```sh
+git stash apply --index STASH_HASH
+```
+
+Verify restored status and diffs. On conflicts or errors, stop and report the
+stash hash and current state. Never use another hard reset to resolve recovery,
+automatically drop a backup stash, or claim recovery succeeded without checking.
