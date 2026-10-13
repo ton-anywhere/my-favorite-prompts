@@ -119,6 +119,8 @@ content outside the patch. Keep these checks; recover through the helper rather
 than direct staging or content commits. This profile uses saved checksums and
 paged review. Separate `stage`, `verify`, and `commit` commands remain available
 for callers that need staged-diff review; this profile uses `finalize`.
+
+**Non-content commits** (message-only `--amend`, `git mv` with unchanged content, reorder, config change already staged) have no working-tree delta, so `prepare` yields an empty patch and the helper is not used. Instead: `git add` the group, read the complete staged diff with `git diff --cached` (recover truncated output by reading every remaining range), confirm it contains exactly the group, then commit. Review still applies because the message or a moved path is the audited change.
 If a hook changes committed content, inspect that commit before an authorized
 repair. Stop for unexpected changes that the recovery steps above do not explain.
 
