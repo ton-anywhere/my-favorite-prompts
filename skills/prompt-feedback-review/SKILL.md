@@ -1,6 +1,6 @@
 ---
 name: prompt-feedback-review
-description: Use when reviewing feedback about Codex or OpenCode agent drift, missed skill usage, weak tests, repeated review loops, bad handoffs, or prompt/context failures, especially when the user asks to inspect sessions, subsessions, commits, agent instructions, AGENTS.md files, skills, or model configs and preview prompt or skill fixes before implementation.
+description: Use when reviewing feedback about Codex, Pi, OMP (oh-my-pi), or OpenCode, or any other coding agent drift, missed skill usage, weak tests, repeated review loops, bad handoffs, or prompt/context failures, especially when the user asks to inspect sessions, subsessions, commits, agent instructions, AGENTS.md files, skills, or model configs and preview prompt or skill fixes before implementation.
 ---
 
 # Prompt Feedback Review
