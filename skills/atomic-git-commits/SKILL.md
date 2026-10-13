@@ -43,6 +43,15 @@ profile in the task or runtime; do not infer the profile from the model name.
 5. **Commit when authorized:** Approval for an entire listed sequence covers its groups; do not ask again for every group. Complete one group before staging the next. A commit request does not authorize a push.
 6. **Verify:** Inspect the resulting committed diff and message. Report the short hash, subject, and remaining changes. If a hook changed the result, inspect it before an authorized repair.
 
+### Review every staged change, including non-content commits
+
+Every commit changes something the reader must be able to audit: file content, a staged diff, a moved/renamed path, or the commit message itself. Review that change before committing, whether or not any tracked file's bytes differ:
+
+- **Content group** (bytes changed): use the small-model profile's patch helper (prepare → review all pages → finalize).
+- **No content delta** (message-only `--amend`, `git mv` with unchanged content, reorder, config change already staged): run `git add` for the group, then read the complete staged diff with `git diff --cached` (recover truncated output by reading every remaining range). Confirm it contains exactly the group, then commit. Do not skip this step just because no file content changed.
+
+The helper's `stage`, `verify`, and `commit` subcommands exist for callers that want to review a staged diff through the helper; they still require a patch produced by `prepare`. For a pure refactor with no working-tree delta, prepare yields an empty patch, so review the staged diff directly as above.
+
 ## Write the Subject
 
 Use Conventional Commits:
