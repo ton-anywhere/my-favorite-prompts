@@ -1,6 +1,6 @@
 ---
 name: atomic-git-commits
-description: "Invoke immediately for ANY git workflow: inspecting (status/diff/log/show), staging (add/stage), committing (commit/amend/reset), branch mgmt (branch/checkout/merge/rebase), remotes (push/pull/fetch), or repo state (stash/worktree). Also on commit-message advice, suggestions, or 'good commit message'. TRIGGER on: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit', 'make a commit'. This skill is AUTHORITATIVE for commit-message format and MUST be followed even when the user only says 'commit' or 'save changes'."
+description: "Authoritative for commit-message format (Conventional Commits) and atomic-commit discipline: one purpose per commit, staging exactly the current group, reviewing staged diffs, and the small-model patch-workflow rules. Also guides inspecting (status/diff/log/show), staging, amending, rebasing without a terminal editor, and general git ops (branch mgmt, remotes, stash) as best-practice guidance, not an exhaustive spec. TRIGGER on: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit', 'make a commit'. MUST be followed even when the user only says 'commit' or 'save changes', because the commit-message format and atomicity rules apply to every commit regardless of the git operation being performed."
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
@@ -18,7 +18,9 @@ profile in the task or runtime; do not infer the profile from the model name.
 - **`SMALL_MODEL_PROFILE` active:** Read the entire
   [small-model playbook](references/small-model-playbook.md) before the first Git
   command. Its Required Patch Workflow is mandatory for content commits and
-  content amendments.
+  content amendments. Use `prepare --worktree REPO_PATH` for whole working files,
+  then follow one printed helper command per tool call: prepare, review all pages,
+  and finalize. Finalize checks staging and the commit against the reviewed patch.
 - **Otherwise:** Use the concise Git workflow below. The patch helper is optional;
   read the playbook if choosing it. Saved patches, checksums, and page receipts are
   not required for this workflow.
@@ -88,7 +90,7 @@ Use this workflow for authorized edits, reordering, squashing, or removal of old
 4. Preserve entries and order except where the task requires changes. Use `edit` for content or message changes, `squash`/`fixup` to combine commits, and `drop` to remove commits.
 5. At each `edit` stop, verify HEAD, then amend:
    - **Message:** `git commit --amend -m "new message"`
-   - **Content:** follow the selected commit workflow, then amend. With `SMALL_MODEL_PROFILE` active, use the helper's `commit --amend --message` with the intended subject.
+   - **Content:** follow the selected commit workflow, then amend. With `SMALL_MODEL_PROFILE` active, use the helper's `finalize --amend --message` with the intended subject.
 6. Run `git rebase --continue` after each stop. For squash message prompts, use a noninteractive `GIT_EDITOR` script that updates the supplied message file in place.
 
 ### Precautions
