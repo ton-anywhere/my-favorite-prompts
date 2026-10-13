@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -54,6 +55,142 @@ class CommitPatchTest(unittest.TestCase):
         self.prepare()
         self.assertEqual(self.git('write-tree'), before)
         self.assertEqual((self.repo / 'settings.txt').read_text(), 'timeout=60\ncolor=green\n')
+
+    def test_worktree_files_support_printed_paged_workflow(self):
+        script = self.repo / 'helper.sh'
+        script.write_text('#!/bin/sh\necho ready\n')
+        script.chmod(0o755)
+        before = self.git('write-tree')
+        result = self.run_helper('prepare', self.patch, '--worktree', 'settings.txt',
+                                 '--worktree', 'helper.sh')
+        self.assertEqual(self.git('write-tree'), before)
+        for step in ('review', 'finalize'):
+            command = shlex.split(result.stdout.rsplit('next: ', 1)[-1]
+                                  if 'next: ' in result.stdout else result.stdout.rsplit('Next: ', 1)[-1])
+            self.assertEqual(command[2], step)
+            if step == 'finalize':
+                command[-1] = 'feat(helper): add ready command'
+            result = subprocess.run(command, cwd=self.repo, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.git('show', 'HEAD:settings.txt'), (self.repo / 'settings.txt').read_bytes())
+        self.assertTrue(self.git('ls-files', '--stage', 'helper.sh').startswith(b'100755'))
+
+    def test_finalize_commits_reviewed_selection_without_second_delivery(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        result = self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                                 '--message', 'fix(settings): increase timeout')
+        self.assertNotIn('diff --git', result.stdout)
+        self.assertFalse(Path(str(checksum) + '.verify.json').exists())
+        self.assertEqual(self.git('show', 'HEAD:settings.txt').decode(), self.snapshot.read_text())
+        self.assertIn(b'+color=green', self.git('diff'))
+
+    def test_finalize_requires_complete_paged_review_before_staging(self):
+        self.snapshot.write_text(''.join(f'setting_{i}=value\n' for i in range(180)))
+        digest = self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.run_helper('review', self.patch, '--sha256-file', checksum, '--page', 1)
+        checksum.write_text(digest + '\n')
+        before = self.git('write-tree')
+        result = self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                                 '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertIn('review', result.stderr)
+        self.assertEqual(self.git('write-tree'), before)
+
+    def test_finalize_rejects_unpaged_checksum_before_staging(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.run_helper('review', self.patch, '--sha256-file', checksum)
+        before = self.git('write-tree')
+        self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                        '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertEqual(self.git('write-tree'), before)
+
+    def test_finalize_rejects_invalid_subject_before_staging(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        before = self.git('write-tree')
+        self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                        '--message', 'invalid subject', ok=False)
+        self.assertEqual(self.git('write-tree'), before)
+
+    def test_finalize_preserves_unrelated_staged_work(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        (self.repo / 'notes.txt').write_text('unrelated\n')
+        self.git('add', 'notes.txt')
+        before = self.git('write-tree')
+        revision = self.git('rev-parse', 'HEAD')
+        self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                        '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertEqual(self.git('write-tree'), before)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), revision)
+
+    def test_finalize_can_retry_after_hook_failure_without_restaging(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        hook = self.repo / '.git/hooks/pre-commit'
+        hook.write_text('#!/bin/sh\necho hook-failed >&2\nexit 1\n')
+        hook.chmod(0o755)
+        revision = self.git('rev-parse', 'HEAD')
+        result = self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                                 '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertIn('hook-failed', result.stderr)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), revision)
+        self.assertEqual(self.git('show', ':settings.txt').decode(), self.snapshot.read_text())
+        hook.unlink()
+        self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                        '--message', 'fix(settings): increase timeout')
+        self.assertEqual(self.git('show', 'HEAD:settings.txt').decode(), self.snapshot.read_text())
+
+    def test_finalize_reports_hook_changes_to_committed_content(self):
+        self.prepare()
+        checksum = self.root / 'review.sha256'
+        self.review_pages('review', checksum)
+        hook = self.repo / '.git/hooks/pre-commit'
+        hook.write_text('#!/bin/sh\nprintf "extra\\n" > extra.txt\ngit add extra.txt\n')
+        hook.chmod(0o755)
+        result = self.run_helper('finalize', self.patch, '--reviewed-sha256-file', checksum,
+                                 '--message', 'fix(settings): increase timeout', ok=False)
+        self.assertIn('committed tree', result.stderr)
+
+    def test_missing_snapshot_explains_input_and_worktree_alternative(self):
+        before = self.git('write-tree')
+        result = self.run_helper('prepare', self.patch, '--file', 'settings.txt',
+                                 self.root / 'missing.txt', ok=False)
+        self.assertIn('existing input file', result.stderr)
+        self.assertIn('--worktree settings.txt', result.stderr)
+        self.assertEqual(self.git('write-tree'), before)
+        self.assertFalse(self.patch.exists())
+
+    def test_continuation_preserves_invoked_symlink_path(self):
+        alias = self.root / 'linked-helper.py'
+        alias.symlink_to(SCRIPT.resolve())
+        result = subprocess.run([sys.executable, str(alias), 'prepare', str(self.patch),
+                                 '--file', 'settings.txt', str(self.snapshot)], cwd=self.repo,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(str(alias), result.stdout)
+
+    def test_worktree_path_is_relative_to_repository_from_subdirectory(self):
+        nested = self.repo / 'nested'
+        nested.mkdir()
+        result = subprocess.run([sys.executable, str(SCRIPT), 'prepare', str(self.patch),
+                                 '--worktree', 'settings.txt'], cwd=nested,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('+color=green', self.patch.read_text())
+
+    def test_duplicate_worktree_and_snapshot_path_preserves_index(self):
+        before = self.git('write-tree')
+        result = self.run_helper('prepare', self.patch, '--worktree', 'settings.txt',
+                                 '--file', 'settings.txt', self.snapshot, ok=False)
+        self.assertIn('distinct', result.stderr)
+        self.assertEqual(self.git('write-tree'), before)
 
     def test_review_prints_complete_patch_and_checksum(self):
         digest = self.prepare()
