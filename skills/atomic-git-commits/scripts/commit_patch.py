@@ -51,7 +51,7 @@ def metadata_path(patch):
 
 
 def next_command(command, patch, *arguments):
-    return shlex.join([sys.executable, str(Path(__file__).resolve()), command,
+    return shlex.join([sys.executable, str(Path(__file__).absolute()), command,
                        str(patch), *map(str, arguments)])
 
 
@@ -147,7 +147,12 @@ def prepare(args, root):
     for raw_path, raw_snapshot in args.file:
         path = checked_path(raw_path)
         snapshot = Path(raw_snapshot).absolute()
+        if not snapshot.is_file() and not snapshot.is_symlink():
+            raise PatchError(f'CONTENT_FILE must be an existing input file: {snapshot}. '
+                             'Create it with the selected content first. '
+                             f'For all working-file changes, use --worktree {shlex.quote(path)} instead.')
         entries.append((path, snapshot))
+    entries.extend((checked_path(path), root / checked_path(path)) for path in args.worktree)
     entries.extend((checked_path(path), None) for path in args.delete)
     paths = [path for path, _ in entries]
     if not paths or len(paths) != len(set(paths)):
@@ -241,6 +246,12 @@ def verify(record):
     git('diff', '--cached', '--check')
 
 
+def validate_message(message):
+    pattern = r'(feat|fix|docs|test|refactor|perf|chore|build|ci|style|revert)(\([^)\n]+\))?!?: [a-z][^\n]*'
+    if not re.fullmatch(pattern, message) or len(message) > 70 or message.endswith(('.', '!', '?')):
+        raise PatchError(f'Use a Conventional Commit subject of at most 70 characters, with a lowercase imperative verb and no body or trailing punctuation. Received {len(message)} characters.')
+
+
 def run(args, root):
     if args.command == 'prepare':
         prepare(args, root)
@@ -267,9 +278,24 @@ def run(args, root):
             with checksum_file.open('x') as destination:
                 destination.write(record['sha256'] + '\n')
             print(f'Checksum saved to {checksum_file}. Read the complete patch before staging.')
-            print('Next: ' + next_command('stage', patch, '--reviewed-sha256-file', checksum_file))
+            if args.page is not None:
+                print('Once authorized, next: ' + next_command(
+                    'finalize', patch, '--reviewed-sha256-file', checksum_file,
+                    '--message', 'TYPE(SCOPE): imperative subject'))
+            else:
+                print('Next: ' + next_command('stage', patch, '--reviewed-sha256-file', checksum_file))
         return
-    if args.command == 'stage':
+    if args.command == 'finalize':
+        require_delivery(args.reviewed_sha256_file, 'review', patch.read_bytes(), record, patch)
+        validate_message(args.message)
+        require_head(record)
+        tree = index_tree()
+        if tree not in (record['base_tree'], record['target_tree']):
+            raise PatchError('The index changed after preparation. Preserve staged work and inspect it before retrying finalize.')
+        if tree == record['base_tree']:
+            git('apply', '--cached', '--check', '--whitespace=error', str(patch))
+            git('apply', '--cached', '--whitespace=error', str(patch))
+    elif args.command == 'stage':
         require_head(record)
         if index_tree() != record['base_tree']:
             raise PatchError('The index changed after preparation. Preserve staged work and prepare a new patch after resolving it.')
@@ -280,7 +306,8 @@ def run(args, root):
     verify(record)
     checksum_file = args.reviewed_sha256_file
     paged = checksum_file and read_progress(checksum_file, 'review')
-    staged_diff = git('diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv').stdout
+    staged_diff = (git('diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv').stdout
+                   if args.command != 'finalize' else None)
     if args.command == 'verify':
         if paged:
             if args.page is None:
@@ -295,7 +322,7 @@ def run(args, root):
                 raise PatchError('Start with review --page 1 --sha256-file to use paged verification.')
             sys.stdout.buffer.write(staged_diff)
             sys.stdout.buffer.flush()
-    if args.command != 'commit':
+    if args.command not in ('commit', 'finalize'):
         print(f'Verified staged tree for SHA256 {record["sha256"]}')
         if args.command == 'stage':
             page_arguments = ['--page', '1'] if paged else []
@@ -304,12 +331,10 @@ def run(args, root):
             print('Read the complete staged diff. Once authorized, next: ' + next_command(
                 'commit', patch, *checksum_arguments(args), '--message', 'TYPE(SCOPE): imperative subject'))
         return
-    if paged:
+    if paged and args.command == 'commit':
         require_delivery(checksum_file, 'verify', staged_diff, record, patch)
     message = args.message
-    pattern = r'(feat|fix|docs|test|refactor|perf|chore|build|ci|style|revert)(\([^)\n]+\))?!?: [a-z][^\n]*'
-    if not re.fullmatch(pattern, message) or len(message) > 70 or message.endswith(('.', '!', '?')):
-        raise PatchError(f'Use a Conventional Commit subject of at most 70 characters, with a lowercase imperative verb and no body or trailing punctuation. Received {len(message)} characters.')
+    validate_message(message)
     arguments = ['commit', '-m', message]
     if args.amend:
         arguments.append('--amend')
@@ -324,11 +349,14 @@ def run(args, root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    for name in ('prepare', 'review', 'stage', 'verify', 'commit'):
+    for name in ('prepare', 'review', 'stage', 'verify', 'commit', 'finalize'):
         command = commands.add_parser(name)
         command.add_argument('patch', help='Explicit patch artifact path; metadata is saved beside it')
         if name == 'prepare':
-            command.add_argument('--file', nargs=2, action='append', default=[], metavar=('REPO_PATH', 'CONTENT_FILE'))
+            command.add_argument('--worktree', action='append', default=[], metavar='REPO_PATH',
+                                 help='Include all changes in this working file; repeat for each repository-relative path')
+            command.add_argument('--file', nargs=2, action='append', default=[], metavar=('REPO_PATH', 'CONTENT_FILE'),
+                                 help='Read selected content from an existing input file; does not create CONTENT_FILE')
             command.add_argument('--delete', action='append', default=[], metavar='REPO_PATH')
         if name == 'review':
             command.add_argument('--sha256-file', help='Save the checksum to a new file after printing the complete patch')
@@ -338,7 +366,10 @@ def main():
             checksum = command.add_mutually_exclusive_group(required=True)
             checksum.add_argument('--reviewed-sha256', help='SHA256 from the complete patch review')
             checksum.add_argument('--reviewed-sha256-file', help='Checksum file saved by review; read the complete patch before using it')
-        if name == 'commit':
+        if name == 'finalize':
+            command.add_argument('--reviewed-sha256-file', required=True,
+                                 help='Checksum from completed paged review; stage, check, and commit without repeating the diff')
+        if name in ('commit', 'finalize'):
             command.add_argument('--message', required=True)
             command.add_argument('--amend', action='store_true')
     args = parser.parse_args()
