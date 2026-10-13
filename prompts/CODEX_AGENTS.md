@@ -23,6 +23,8 @@ For technical and instructional prose:
 
 # How to Work
 
+- Prefer `apply_patch` for file edits instead of shell commands or scripts.
+
 ## Verify before raising doubts
 
 - Check the local files, configuration, and live state that can safely be checked before making claims or asking the user to investigate.

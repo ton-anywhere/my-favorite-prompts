@@ -27,14 +27,14 @@ Upstream checkouts are used as a linked dependency;
 - Shell scripts should use `#!/usr/bin/env bash` and `set -euo pipefail`.
 - Prefer kebab-case names for skills and most agent files (for example `writing-plans`, `tech-lead-agent.md`).
 - Keep each skill self-contained in its own directory with a single canonical `SKILL.md`.
+- When creating a new skill, include the license and metadata fields to the frontmatter:
+```
+  license: MIT
+  metadata:
+    author: Airton Ponce @ton-anywhere
+```
 
 ## Testing Guidelines
 - No single root test runner exists; validate by change type.
 - For shell script edits, run `bash -n <script>` before committing.
 - If you modify `superpowers/` internals, run the relevant tests from `superpowers/tests/` (for example `cd superpowers/tests/brainstorm-server && node ws-protocol.test.js`).
-
-## Commit & Pull Request Guidelines
-- Follow the existing history style: short, imperative subjects (`add qa agent`, `reference dev loop`).
-- Keep commits focused; avoid mixing content, infra, and sync updates.
-- PRs should include: what changed, why, affected paths, and exact verification commands run.
-- Link related task/issue IDs when available, and include screenshots only for visual/UI-facing changes.
