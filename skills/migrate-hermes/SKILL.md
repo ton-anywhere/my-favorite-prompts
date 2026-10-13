@@ -1,10 +1,15 @@
 ---
 name: migrate-hermes
-description: Guide migration of a Hermes Agent installation between machines, users, or container and native environments while preserving agent state and integrations.
+description: Provide high-level guidance for migrating a Hermes Agent installation between machines, users, or container and native environments while preserving agent state and integrations.
 disable-model-invocation: true
 ---
 
 # Migrate Hermes
+
+This skill provides high-level guidance, not a step-by-step technical procedure.
+Use it to identify migration concerns and success criteria. Derive commands and
+implementation details from the actual installations and current Hermes
+documentation; adapt the sequence to the migration.
 
 Move the existing agent while preserving its identity, data, integrations, and
 access controls. Adapt this workflow to the source and destination. Keep
@@ -56,6 +61,13 @@ unrelated applications outside the migration scope.
 - Review executable paths, working directories, script inputs and outputs,
   repository locations, and external tools. Change active host-specific paths
   selectively; explanatory references to container paths may still be valid.
+- Check persisted state for old paths, including artifact references, session
+  working directories, and routing metadata. Updating configuration and scripts
+  alone may leave these references unchanged.
+- Reconcile stale routing entries with current records without losing session
+  history. Back up affected state, verify file destinations and record identity,
+  and report unresolved references. Preserve historical examples and logs when
+  they do not affect operation.
 - Rebuild virtual environments and platform-specific dependencies on the
   destination. Restore their purpose and required packages rather than relying
   on copied interpreters, symlinks, or binary caches.
