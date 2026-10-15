@@ -1,10 +1,10 @@
 ---
 name: renaming-opencode-sessions
 description: Use when you need to rename an opencode session - bypasses the interactive /rename command by updating the SQLite database directly
+disable-model-invocation: true 
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
-disable-model-invocation: true 
 ---
 
 # Renaming OpenCode Sessions

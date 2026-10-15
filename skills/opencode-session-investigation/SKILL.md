@@ -1,10 +1,10 @@
 ---
 name: opencode-session-investigation
 description: Use when investigating opencode sessions, subsessions, agent drift, missed handoffs, tool misuse, or feedback grounded in opencode session exports.
+disable-model-invocation: true
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
-disable-model-invocation: true
 ---
 
 # OpenCode Session Investigation
