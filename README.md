@@ -31,7 +31,7 @@ Bootstrap the managed upstream checkouts and skill links with:
 Bootstrap currently installs all Superpowers skills, LambdaTest's
 `rspec-skill`, Impeccable's agent skill, and these Matt Pocock skills:
 `codebase-design`, `domain-modeling`, `prototype`, `research`, `wizard`,
-`handoff`, `teach`, and `writing-for-agents`. It clones Steipete's checkout
+`handoff`, `teach`, `wait-what`, and `writing-for-agents`. It clones Steipete's checkout
 for future use but does not install its skills yet.
 
 ## Updating Upstreams

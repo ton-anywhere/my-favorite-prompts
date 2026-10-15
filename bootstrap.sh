@@ -24,6 +24,7 @@ MATTPOCOCK_ENGINEERING_SKILLS=(
 MATTPOCOCK_PRODUCTIVITY_SKILLS=(
   handoff
   teach
+  wait-what
   writing-for-agents
 )
 
