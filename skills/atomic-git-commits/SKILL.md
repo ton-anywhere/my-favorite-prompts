@@ -12,8 +12,9 @@ Create small commits with self-contained intent and consistently useful messages
 
 ## Select the Workflow
 
-Read this skill before running Git commands. Select the workflow from the explicit
-profile in the task or runtime; do not infer the profile from the model name.
+Read this skill before running Git commands. `SMALL_MODEL_PROFILE` is passed in
+the prompt, not as an environment variable.
+Do not infer the profile from the model name.
 
 - **`SMALL_MODEL_PROFILE` active:** Read the entire
   [small-model playbook](references/small-model-playbook.md) before the first Git
