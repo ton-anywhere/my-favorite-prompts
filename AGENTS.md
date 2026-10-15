@@ -14,6 +14,7 @@ Upstream checkouts are used as a linked dependency;
 - `lambdatest-agent-skills/`
 - `impeccable/`
 - `steipete-agent-scripts/`
+- `mattpocock-skills/`
 
 ## Build, Test, and Development Commands
 - `./bootstrap.sh`: clones/updates all managed upstream checkouts, builds the generated `agents-skills/` links, links it into `~/.agents/skills`, and links custom OpenCode skills into `~/.opencode/skills`.
@@ -22,6 +23,7 @@ Upstream checkouts are used as a linked dependency;
 - `git -C lambdatest-agent-skills pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C impeccable pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C steipete-agent-scripts pull --ff-only origin main`: updates the upstream checkout without merge commits.
+- `git -C mattpocock-skills pull --ff-only origin main`: updates the upstream checkout without merge commits.
 
 ## Coding Style & Naming Conventions
 - Use Markdown for content and keep sections concise, imperative, and scannable.

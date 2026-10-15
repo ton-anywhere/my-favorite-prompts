@@ -13,6 +13,7 @@ Personal AI workspace for prompts, agents, and skills.
 - [`lambdatest-agent-skills/`](https://github.com/LambdaTest/agent-skills) for the upstream LambdaTest agent skills checkout
 - [`impeccable/`](https://github.com/pbakaus/impeccable) for the upstream Impeccable checkout
 - [`steipete-agent-scripts/`](https://github.com/steipete/agent-scripts) for the upstream agent scripts checkout
+- [`mattpocock-skills/`](https://github.com/mattpocock/skills) for the upstream Matt Pocock skills checkout
 
 ## Setup
 
@@ -28,8 +29,10 @@ Bootstrap the managed upstream checkouts and skill links with:
 4. Exposes custom OpenCode skills in `~/.opencode/skills`.
 
 Bootstrap currently installs all Superpowers skills, LambdaTest's
-`rspec-skill`, and Impeccable's agent skill. It clones Steipete's checkout for
-future use but does not install its skills yet.
+`rspec-skill`, Impeccable's agent skill, and these Matt Pocock skills:
+`codebase-design`, `domain-modeling`, `prototype`, `research`, `wizard`,
+`handoff`, `teach`, and `writing-for-agents`. It clones Steipete's checkout
+for future use but does not install its skills yet.
 
 ## Updating Upstreams
 
@@ -40,6 +43,7 @@ git -C superpowers pull --ff-only origin main
 git -C lambdatest-agent-skills pull --ff-only origin main
 git -C impeccable pull --ff-only origin main
 git -C steipete-agent-scripts pull --ff-only origin main
+git -C mattpocock-skills pull --ff-only origin main
 ```
 
 If you add or rename local skills, keep them under `skills/<name>/SKILL.md`.
