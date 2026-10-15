@@ -1,6 +1,9 @@
 ---
 name: my-ai-server-navigation
 description: Use when an agent outside the my-ai-server repository needs to find its authoritative operational, networking, model, or troubleshooting guidance.
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Navigating my-ai-server

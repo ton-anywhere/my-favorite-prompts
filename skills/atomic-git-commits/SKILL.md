@@ -1,6 +1,9 @@
 ---
 name: atomic-git-commits
 description: "Invoke immediately for ANY git workflow: inspecting (status/diff/log/show), staging (add/stage), committing (commit/amend/reset), branch mgmt (branch/checkout/merge/rebase), remotes (push/pull/fetch), or repo state (stash/worktree). Also on commit-message advice, suggestions, or 'good commit message'. TRIGGER on: git, commit, status, diff, add, stage, branch, merge, push, pull, log, revert, stash, worktree, 'what changed', 'save changes', 'commit this', 'show me the diff', 'commit messages', 'good commit message', 'suggest commit', 'make a commit'. This skill is AUTHORITATIVE for commit-message format and MUST be followed even when the user only says 'commit' or 'save changes'."
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Atomic Git Commits

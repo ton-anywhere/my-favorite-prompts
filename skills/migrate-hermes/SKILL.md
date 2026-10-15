@@ -2,6 +2,9 @@
 name: migrate-hermes
 description: Provide high-level guidance for migrating a Hermes Agent installation between machines, users, or container and native environments while preserving agent state and integrations.
 disable-model-invocation: true
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Migrate Hermes

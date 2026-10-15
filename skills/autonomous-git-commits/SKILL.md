@@ -2,6 +2,9 @@
 name: autonomous-git-commits
 description: "Create focused Git commits without per-commit approval when the user requests autonomous commits or invokes this skill for a repository change. Use for task changes, commit grouping, staging, and commit messages. For Git advice or inspection without autonomous commits, use atomic-git-commits."
 disable-model-invocation: true
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Autonomous Git Commits

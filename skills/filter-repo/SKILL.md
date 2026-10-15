@@ -1,6 +1,7 @@
 ---
 name: filter-repo
 description: Remove files or directories from Git history with git-filter-repo. Use when asked to purge paths from past commits or publish rewritten branches and tags after cleanup. Do not use for ordinary file deletion.
+disable-model-invocation: true
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere

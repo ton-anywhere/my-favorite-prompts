@@ -1,6 +1,10 @@
 ---
 name: babysitter
 description: Use when supervising a constrained local model that repeats tool failures, loses mutable state, follows the wrong instructions, or needs an evidence-backed workflow intervention.
+disable-model-invocation: true
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Babysitting Small Models

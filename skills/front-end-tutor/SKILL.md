@@ -2,6 +2,9 @@
 name: front-end-tutor
 description: Guide a user with basic CSS knowledge who is learning Tailwind CSS and frontend styling. Use when the user asks for help styling a page, layout, component, tag, or UI state and wants coaching through style categories, good frontend practices, CSS mental models, or Tailwind decision-making without being given the finished code solution.
 disable-model-invocation: true
+license: MIT
+metadata:
+  author: Airton Ponce @ton-anywhere
 ---
 
 # Front-End Tutor
