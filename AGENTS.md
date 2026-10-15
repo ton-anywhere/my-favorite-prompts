@@ -6,6 +6,7 @@ This repository is a prompt, skill and agents workspace, not a compiled app.
 - `prompts/`: reusable prompt fragments (`*.md`).
 - `agents/`: agent definitions and role templates.
 - `skills/`: local skills, one per folder (`skills/<skill-name>/SKILL.md`).
+- `agents-skills/`: generated links to local and selected third-party skills.
 - `metaprompt/`: metapromtps - prompts that generate prompts.
 
 Upstream checkouts are used as a linked dependency;
@@ -15,8 +16,8 @@ Upstream checkouts are used as a linked dependency;
 - `steipete-agent-scripts/`
 
 ## Build, Test, and Development Commands
-- `./bootstrap.sh`: clones/updates `superpowers/`, `lambdatest-agent-skills/`, and `impeccable/`, links `skills/` into `~/.agents/skills`, links custom opencode skills into `~/.opencode/skills`, and maintains symlinks.
-- `./flatten_superpowers.sh`: creates/refreshes symlinks from `superpowers/skills/*` into local `skills/`.
+- `./bootstrap.sh`: clones/updates all managed upstream checkouts, builds the generated `agents-skills/` links, links it into `~/.agents/skills`, and links custom OpenCode skills into `~/.opencode/skills`.
+- `./flatten_superpowers.sh`: creates/refreshes symlinks from `superpowers/skills/*` into generated `agents-skills/`.
 - `git -C superpowers pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C lambdatest-agent-skills pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C impeccable pull --ff-only origin main`: updates the upstream checkout without merge commits.

@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 SUPERPOWERS_DIR="$ROOT/superpowers"
 LAMBDATEST_AGENT_SKILLS_DIR="$ROOT/lambdatest-agent-skills"
 IMPECCABLE_DIR="$ROOT/impeccable"
+STEIPETE_AGENT_SCRIPTS_DIR="$ROOT/steipete-agent-scripts"
 SKILLS_DIR="$ROOT/skills"
 AGENTS_SKILLS_DIR="$ROOT/agents-skills"
 AGENTS_SKILLS="$HOME/.agents/skills"
@@ -39,20 +40,30 @@ else
   git clone https://github.com/pbakaus/impeccable.git "$IMPECCABLE_DIR"
 fi
 
-# populate canonical skills dir
-ln -sfn ../lambdatest-agent-skills/rspec-skill "$SKILLS_DIR/rspec-skill"
-ln -sfn "$IMPECCABLE_DIR/.agents/skills/impeccable" "$SKILLS_DIR/impeccable"
-bash "$ROOT/flatten_superpowers.sh"
+if [[ -d "$STEIPETE_AGENT_SCRIPTS_DIR/.git" ]]; then
+  git -C "$STEIPETE_AGENT_SCRIPTS_DIR" pull --ff-only origin main
+else
+  git clone https://github.com/steipete/agent-scripts.git "$STEIPETE_AGENT_SCRIPTS_DIR"
+fi
 
+# Recreate the generated runtime skill directory from its sources.
 mkdir -p "$AGENTS_SKILLS_DIR"
 find "$AGENTS_SKILLS_DIR" -maxdepth 1 -type l -delete
 
+# Link the upstream Superpowers skills directly into the generated directory.
+bash "$ROOT/flatten_superpowers.sh"
+
+# Link local skills into the generated directory.
 for skill in "$SKILLS_DIR"/*; do
   [[ -d "$skill" ]] || continue
   name="${skill##*/}"
   is_excluded_skill "$name" && continue
   ln -sfn "../skills/$name" "$AGENTS_SKILLS_DIR/$name"
 done
+
+# Link selected third-party skills into the generated directory.
+ln -sfn "../lambdatest-agent-skills/rspec-skill" "$AGENTS_SKILLS_DIR/rspec-skill"
+ln -sfn "$IMPECCABLE_DIR/.agents/skills/impeccable" "$AGENTS_SKILLS_DIR/impeccable"
 
 mkdir -p "$HOME/.agents"
 ln -sfn "$AGENTS_SKILLS_DIR" "$AGENTS_SKILLS"
