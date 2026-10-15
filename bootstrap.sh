@@ -36,7 +36,7 @@ is_excluded_skill() {
 }
 
 if [[ -d "$SUPERPOWERS_DIR/.git" ]]; then
-  git -C "$SUPERPOWERS_DIR" pull --ff-only origin main
+  git -C "$SUPERPOWERS_DIR" fetch --prune origin
 else
   git clone https://github.com/obra/superpowers.git "$SUPERPOWERS_DIR"
 fi
@@ -60,25 +60,18 @@ else
 fi
 
 if [[ -d "$MATTPOCOCK_SKILLS_DIR/.git" ]]; then
-  git -C "$MATTPOCOCK_SKILLS_DIR" pull --ff-only origin main
+  git -C "$MATTPOCOCK_SKILLS_DIR" fetch --prune origin
 else
   git clone https://github.com/mattpocock/skills.git "$MATTPOCOCK_SKILLS_DIR"
 fi
 
-# Recreate the generated runtime skill directory from its sources.
+# Recreate the generated runtime skill directory from its sources. This is an
+# infrastructure link directory; project AI artifacts belong under .agents/.
 mkdir -p "$AGENTS_SKILLS_DIR"
 find "$AGENTS_SKILLS_DIR" -maxdepth 1 -type l -delete
 
 # Link the upstream Superpowers skills directly into the generated directory.
 bash "$ROOT/flatten_superpowers.sh"
-
-# Link local skills into the generated directory.
-for skill in "$SKILLS_DIR"/*; do
-  [[ -d "$skill" ]] || continue
-  name="${skill##*/}"
-  is_excluded_skill "$name" && continue
-  ln -sfn "../skills/$name" "$AGENTS_SKILLS_DIR/$name"
-done
 
 # Link selected third-party skills into the generated directory.
 ln -sfn "../lambdatest-agent-skills/rspec-skill" "$AGENTS_SKILLS_DIR/rspec-skill"
@@ -90,6 +83,14 @@ done
 
 for name in "${MATTPOCOCK_PRODUCTIVITY_SKILLS[@]}"; do
   ln -sfn "$MATTPOCOCK_SKILLS_DIR/skills/productivity/$name" "$AGENTS_SKILLS_DIR/$name"
+done
+
+# Link local skills last so local overrides win over upstream skill names.
+for skill in "$SKILLS_DIR"/*; do
+  [[ -d "$skill" ]] || continue
+  name="${skill##*/}"
+  is_excluded_skill "$name" && continue
+  ln -sfn "../skills/$name" "$AGENTS_SKILLS_DIR/$name"
 done
 
 mkdir -p "$HOME/.agents"

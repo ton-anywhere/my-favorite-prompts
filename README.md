@@ -39,13 +39,19 @@ for future use but does not install its skills yet.
 Update the upstream checkouts with:
 
 ```bash
-git -C superpowers pull --ff-only origin main
+git -C superpowers fetch --prune origin
+git -C superpowers switch local-custom
+git -C superpowers rebase origin/main
 git -C lambdatest-agent-skills pull --ff-only origin main
 git -C impeccable pull --ff-only origin main
 git -C steipete-agent-scripts pull --ff-only origin main
-git -C mattpocock-skills pull --ff-only origin main
+git -C mattpocock-skills fetch --prune origin
+git -C mattpocock-skills switch local-custom
+git -C mattpocock-skills rebase origin/main
 ```
 
 If you add or rename local skills, keep them under `skills/<name>/SKILL.md`.
+Path-customized Matt skills are maintained as commits on the
+`mattpocock-skills/local-custom` branch.
 The generated `agents-skills/` directory is created by `bootstrap.sh` and is
 ignored by Git.
