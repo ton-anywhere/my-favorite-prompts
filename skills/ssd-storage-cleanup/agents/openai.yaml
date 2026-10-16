@@ -2,3 +2,6 @@ interface:
   display_name: "SSD Storage Cleanup"
   short_description: "Plan and safely reclaim local SSD space"
   default_prompt: "Use $ssd-storage-cleanup to audit the local SSD and create confirmation-gated cleanup checklists."
+
+policy:
+  allow_implicit_invocation: false

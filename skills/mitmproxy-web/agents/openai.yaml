@@ -2,3 +2,6 @@ interface:
   display_name: "Mitmproxy Web"
   short_description: "Inspect authenticated mitmweb flows safely"
   default_prompt: "Use $mitmproxy-web to inspect a mitmweb flow response for request debugging."
+
+policy:
+  allow_implicit_invocation: false

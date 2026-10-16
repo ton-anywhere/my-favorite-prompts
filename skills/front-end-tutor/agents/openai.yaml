@@ -8,3 +8,6 @@ dependencies:
     - type: "mcp"
       value: "tailwindcss-server"
       description: "Tailwind CSS documentation, utility, color, and CSS-to-utility lookup for accurate tutoring."
+
+policy:
+  allow_implicit_invocation: false
