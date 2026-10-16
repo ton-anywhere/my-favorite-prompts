@@ -12,7 +12,10 @@ Create small commits with self-contained intent and consistently useful messages
 
 ## Select the Workflow
 
-Read this skill before running Git commands. `SMALL_MODEL_PROFILE` is passed in
+Read this skill before any Git command, including read-only discovery such as
+`git status`, `git worktree`, `git remote`, `git branch`, and `git log`.
+If a requested path is missing, load this skill before continuing with Git
+discovery. `SMALL_MODEL_PROFILE` is passed in
 the prompt, not as an environment variable.
 Do not infer the profile from the model name.
 
@@ -40,7 +43,7 @@ Do not infer the profile from the model name.
 1. **Inspect:** Run `git status --short`. Read the relevant tracked diffs and untracked content. Preserve unrelated staged and working changes.
 2. **Plan:** Assign every changed and untracked path to a commit group or an explicit exclusion before proposing the sequence. Include supporting tests, fixtures, and instructions. List multiple commits in dependency order.
 3. **Stage one group:** Use explicit paths for whole-file changes and hunk selection for shared files. With `SMALL_MODEL_PROFILE` active, use the playbook's helper instead. Resolve unrelated staged work before committing; do not silently include or unstage it.
-4. **Review:** Read the complete staged diff and run `git diff --cached --check`. Confirm it contains exactly the group. Recover truncated output by reading every remaining range. A file list or statistic is not a content review. Resolve failed checks before proceeding.
+4. **Review:** Read the complete staged diff and run `git diff --cached --check`. If output is truncated, stop and rerun it in bounded path groups or line ranges until every staged path and hunk has been visibly reviewed. Confirm it contains exactly the group. A file list or statistic is not a content review. Resolve failed checks before proceeding.
 5. **Commit when authorized:** Approval for an entire listed sequence covers its groups; do not ask again for every group. Complete one group before staging the next. A commit request does not authorize a push.
 6. **Verify:** Inspect the resulting committed diff and message. Report the short hash, subject, and remaining changes. If a hook changed the result, inspect it before an authorized repair.
 
