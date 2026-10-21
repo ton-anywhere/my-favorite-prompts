@@ -1,0 +1,5 @@
+interface:
+  display_name: "Advisor Selection"
+  short_description: "Pick and price the OMP advisor model"
+policy:
+  allow_implicit_invocation: false
