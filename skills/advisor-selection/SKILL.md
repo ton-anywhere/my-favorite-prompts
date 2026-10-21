@@ -1,6 +1,6 @@
 ---
 name: advisor-selection
-description: Use when choosing, replacing, or reviewing the advisor model in an OMP/oh-my-pi session (the second model that reviews each completed turn), or when evaluating a driver+advisor pair, advisor failovers, or advisor cost on a metered plan.
+description: Use when choosing, replacing, or reviewing the advisor model in an OMP/oh-my-pi session (the second model that reviews each completed turn), when evaluating a driver+advisor pair, advisor failovers, or advisor cost across plans and providers, or when deciding that no advisor is warranted.
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -23,6 +23,25 @@ Apply in order. Stop at the first candidate that clears the bar.
 4. **Operational fit.** Context window ≥ the driver's (it sees the whole transcript); API shape the client speaks; enough format discipline to respect note budgets and not re-raise settled points. Latency only matters when `advisor.syncBacklog` is on, where the primary can wait at backlog.
 5. **Privacy.** The advisor sees the entire session — exclude models whose terms allow training on prompts.
 
+## When no advisor is warranted
+
+Recommend *none* instead of forcing a pick when any of these hold:
+
+- **Only one model family is reachable** (a single Claude, GPT, or Codex subscription). A sibling shares the driver's blind spots, so it adds capability, not independence — and capability is better spent in `plan`/`slow`.
+- **No candidate clears the capability bar** over the driver. A weaker reviewer is a rubber stamp.
+- **The advisor would run per turn on a premium, separately capped model.** That drains a subscription window at the worst possible frequency.
+- **The driver can be checked by tools.** Tests, type checks, and repro scripts beat a same-family opinion, at no quota cost.
+
+State the reason, and name the alternative: a cross-family advisor on another account, premium capability in a low-frequency role, or no advisor at all.
+
+## Roles by frequency
+
+`advisor` fires on every completed turn; `plan` fires per task, `slow` on demand, `commit` per commit. Premium capability pays at the low-frequency roles. Reserve `advisor` for the one thing it uniquely buys: an independent opinion on each turn.
+
+## Discovery
+
+Run `omp models list` to see what the user can actually call, grouped by provider. Don't assume an inventory or infer availability from a model id — if a plan's status is unclear (expired trial, exhausted pool), ask the user.
+
 ## Price is a constraint, not a criterion
 
 Plans express cost in incompatible units: weighted pools (OpenCode Go), plain per-token bills (OpenRouter, first-party APIs), request quotas, credit bundles, free/contributor tiers. A number is only comparable after conversion to the same two figures, at your measured advisor volume:
@@ -36,7 +55,7 @@ The same model on a different route is a different price: cache support, provide
 
 ## Measure, don't assume
 
-- **Per-turn shape:** `scripts/advisor_usage.py` aggregates `~/.omp/agent/sessions/**/__advisor.jsonl` by model. Assumed token counts are usually wrong about cache writes and output length.
+- **Per-turn shape:** `scripts/advisor_usage.py` aggregates the advisor session logs by model. Assumed token counts are usually wrong about cache writes and output length.
 - **Cost per turn:** `scripts/advisor_usage.py --costs prices.json` prices each candidate on the measured shape of the advisor you are replacing (`shape_from`), applying the route's `factor`. Prices are $/1M tokens; use `factor: 1` for per-token routes and the plan's multiplier for pooled subscriptions. Measured token counts already embed that route's cache-hit rate, so re-measure after moving providers.
 - **Whether the advisor is useful:** act-on rate = notes acted on ÷ notes emitted, per model, over about a week. Below roughly half, the advisor is noise paid for twice — once in tokens, once in turns spent refuting it.
 
