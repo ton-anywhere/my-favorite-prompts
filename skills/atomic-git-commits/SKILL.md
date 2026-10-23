@@ -56,6 +56,22 @@ Every commit changes something the reader must be able to audit: file content, a
 
 The helper's `stage`, `verify`, and `commit` subcommands exist for callers that want to review a staged diff through the helper; they still require a patch produced by `prepare`. For a pure refactor with no working-tree delta, prepare yields an empty patch, so review the staged diff directly as above.
 
+## Commit Types
+
+| Type | Use for |
+| --- | --- |
+| `feat` | new capability or behavior change |
+| `fix` | restore intended behavior |
+| `docs` | documentation only, no behavior change |
+| `test` | add or fix tests only |
+| `refactor` | restructure without behavior change |
+| `perf` | faster or cheaper existing behavior |
+| `chore` | maintenance, deps, config |
+| `build` | build system or packaging |
+| `ci` | CI pipeline or automation |
+| `style` | formatting or whitespace only |
+| `revert` | undo a previous commit |
+
 ## Write the Subject
 
 Use Conventional Commits:
@@ -64,7 +80,7 @@ Use Conventional Commits:
 <type>(<scope>): <imperative description>
 ```
 
--   **Type:** Use the narrowest accurate type: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`, `build`, `ci`, `style`, or `revert`.
+-   **Type:** Use the narrowest accurate type from [Commit Types](#commit-types).
 -   **Logic vs Documentation:** Use `feat` or `fix` if the logic, behavior, or capabilities of the skill/agent change. Use `docs` ONLY for pure documentation/explanation changes that do not alter how the agent/skill functions.
 -   **Scope:** Use a concise scope (e.g., a component, directory, or feature name). Omit if no single scope accurately describes the change. Do not repeat the type as the scope (e.g., avoid `docs(docs)`).
 -   **Mood:** Use a lowercase imperative verb (e.g., `add`, `remove`, `tune`, `refactor`). Preserve technical identifiers such as API. Do not use `added`, `updated`, or `fixes`.
