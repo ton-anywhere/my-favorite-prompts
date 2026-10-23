@@ -15,6 +15,7 @@ Upstream checkouts are used as a linked dependency;
 - `impeccable/`
 - `steipete-agent-scripts/`
 - `mattpocock-skills/`
+- `ponytail/` (installed as an omp plugin with `omp plugin link`)
 
 Read `LOCAL_NOTES.md` before updating an upstream checkout. It documents the
 local-patch branches, rebase workflow, and repository-specific exceptions.
@@ -41,6 +42,7 @@ local-patch branches, rebase workflow, and repository-specific exceptions.
 - `git -C impeccable pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C steipete-agent-scripts pull --ff-only origin main`: updates the upstream checkout without merge commits.
 - `git -C mattpocock-skills fetch --prune origin`: refreshes upstream refs; rebase `local-custom` manually as documented in `LOCAL_NOTES.md`.
+- `git -C ponytail fetch --prune origin`: refreshes upstream refs; rebase `local-custom` manually as documented in `LOCAL_NOTES.md`.
 
 ## Coding Style & Naming Conventions
 - Use Markdown for content and keep sections concise, imperative, and scannable.

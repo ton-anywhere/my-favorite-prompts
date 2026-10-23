@@ -24,8 +24,8 @@ git -C superpowers rebase origin/main
 
 Do not reset or reclone `superpowers/` during routine updates; that would lose
 the local patch stack. The parent repository's `bootstrap.sh` fetches upstream
-refs for Superpowers and Matt Pocock without rebasing local patches. Run the
-rebase commands above manually.
+refs for Superpowers, Matt Pocock, and Ponytail without rebasing local patches.
+Run the rebase commands above manually.
 
 ## Third-party checkouts with local patches
 
@@ -54,3 +54,29 @@ git -C mattpocock-skills fetch --prune origin
 git -C mattpocock-skills switch local-custom
 git -C mattpocock-skills rebase origin/main
 ```
+
+## Ponytail checkout and plugin
+
+`ponytail/` is both an upstream checkout and the omp plugin source. It is
+installed with:
+
+```bash
+omp plugin link ~/code/ton-anywhere/my-favorite-prompts/ponytail
+```
+
+The plugin's skills, hooks, and slash commands therefore load from the patched
+tree; `bootstrap.sh` links its skills into `agents-skills/` like the other
+upstreams. Keep personal changes on `local-custom`. A rebase takes effect on
+the next `omp` start.
+
+Update Ponytail's checkout with:
+
+```bash
+git -C ponytail fetch --prune origin
+git -C ponytail switch local-custom
+git -C ponytail rebase origin/main
+```
+
+Never run `omp plugin upgrade @dietrichgebert/ponytail`: a linked plugin has
+nothing to upgrade from, and reinstalling it from GitHub would replace the
+patched tree with the published package.

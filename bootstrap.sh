@@ -7,6 +7,7 @@ LAMBDATEST_AGENT_SKILLS_DIR="$ROOT/lambdatest-agent-skills"
 IMPECCABLE_DIR="$ROOT/impeccable"
 STEIPETE_AGENT_SCRIPTS_DIR="$ROOT/steipete-agent-scripts"
 MATTPOCOCK_SKILLS_DIR="$ROOT/mattpocock-skills"
+PONYTAIL_DIR="$ROOT/ponytail"
 SKILLS_DIR="$ROOT/skills"
 AGENTS_SKILLS_DIR="$ROOT/agents-skills"
 AGENTS_SKILLS="$HOME/.agents/skills"
@@ -66,6 +67,12 @@ else
   git clone https://github.com/mattpocock/skills.git "$MATTPOCOCK_SKILLS_DIR"
 fi
 
+if [[ -d "$PONYTAIL_DIR/.git" ]]; then
+  git -C "$PONYTAIL_DIR" fetch --prune origin
+else
+  git clone https://github.com/DietrichGebert/ponytail.git "$PONYTAIL_DIR"
+fi
+
 # Recreate the generated runtime skill directory from its sources. This is an
 # infrastructure link directory; project AI artifacts belong under .agents/.
 mkdir -p "$AGENTS_SKILLS_DIR"
@@ -84,6 +91,12 @@ done
 
 for name in "${MATTPOCOCK_PRODUCTIVITY_SKILLS[@]}"; do
   ln -sfn "$MATTPOCOCK_SKILLS_DIR/skills/productivity/$name" "$AGENTS_SKILLS_DIR/$name"
+done
+
+# Ponytail's skills ship inside its plugin; link them like the other upstreams.
+for skill in "$PONYTAIL_DIR"/skills/*/; do
+  [[ -f "$skill/SKILL.md" ]] || continue
+  ln -sfn "${skill%/}" "$AGENTS_SKILLS_DIR/$(basename "$skill")"
 done
 
 # Link local skills last so local overrides win over upstream skill names.
