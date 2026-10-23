@@ -12,6 +12,12 @@ Comments exist to transfer knowledge that cannot be read from the code itself. A
 
 ---
 
+## Comment Budget
+
+Comments are the exception, not the frame. In a short single-purpose script, one file-level "why" comment plus at most one inline warning is the ceiling. A header does not need to restate the call flow; the code already carries it.
+
+---
+
 ## Add or Keep Comments When
 
 **A restart or deployment action is required.**
