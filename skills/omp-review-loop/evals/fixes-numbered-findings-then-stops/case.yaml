@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: fixes-numbered-findings-then-stops
+expected_outcome: |
+  The agent reads the whole numbered findings block before editing, addresses each finding, reruns the review, and stops after APPROVE without starting another round.

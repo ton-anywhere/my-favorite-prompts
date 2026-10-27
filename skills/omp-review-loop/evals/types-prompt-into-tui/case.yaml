@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: types-prompt-into-tui
+expected_outcome: |
+  The /review command is typed with pane send-text, checked on screen, then submitted with send-keys enter. herdr agent prompt is not used for the review command.

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: stops-when-nothing-to-review
+expected_outcome: |
+  The agent finds no uncommitted changes and no commits ahead of main, opens no herdr pane, and reports that there is nothing to review.

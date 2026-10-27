@@ -1,0 +1,6 @@
+interface:
+  display_name: "OMP Review Loop"
+  short_description: "Run an omp /review loop in herdr until approved"
+
+policy:
+  allow_implicit_invocation: false

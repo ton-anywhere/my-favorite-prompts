@@ -7,10 +7,11 @@ metadata:
   author: Airton Ponce @ton-anywhere
 ---
 
-Read the plans and specs provided.
+Read the plans and specs provided. 
+DO NOT look for another doc for guidance. All task requirements are in the doc provided. 
 Orchestrate the implementation on the current worktree.
 Prefer launching tasks / smol subagents.
-Before reporting back to the human, launch one final slow agent to review your work after completing it.
+Before reporting back to the human, commit your changes  and launch one final slow agent to review your work after completing it.
 
 # IMPORTANT
 - Don't launch a review subagent for each subtask.
