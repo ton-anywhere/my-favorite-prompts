@@ -6,3 +6,7 @@ mattpocock-skills/
 impeccable/
 awesome-design-md/
 /agents-skills/
+
+# Claude Code managed-skills sync cache; ~/.claude/skills is a symlink to skills/,
+# so the sync writes <org>_<account> buckets back into the repo.
+/skills/synced/
