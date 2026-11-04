@@ -47,7 +47,7 @@ const app = createApp({ store: new SqliteStore(path) })
 
 ## Verification
 
-1. Write every edge as "A depends on B", naming the call through B or the interface B defines. Drop edges that only describe construction, injection, or a value passed through.
+1. Write every edge as "A depends on B" only when A imports or instantiates B. Drop edges for construction, injection, a value passed through, or an argument A receives and calls; that call belongs in the data-flow diagram.
 2. Run a cycle check over resolved imports (`madge --circular`, `depcruise`, `import-linter`, or a small script).
 3. Confirm the composition root has one outgoing edge, to the application entry. Any other outgoing edge must be a real call.
 4. Replace one adapter mentally and confirm the policy files stay untouched.
