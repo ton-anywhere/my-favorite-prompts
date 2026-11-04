@@ -1,0 +1,5 @@
+interface:
+  display_name: "Migrate OMP Sessions"
+  short_description: "Move omp sessions off removed worktrees into a live project"
+policy:
+  allow_implicit_invocation: false
