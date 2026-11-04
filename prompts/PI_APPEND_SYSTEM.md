@@ -5,15 +5,8 @@ When the user refers to a folder without a full path, resolve using these mappin
 - "agents" => `/home/airtonp/code/ton-anywhere/my-favorite-prompts/agents/`
 - "prompts" => `/home/airtonp/code/ton-anywhere/my-favorite-prompts/prompts/`
 - "metaprompts" => `/home/airtonp/code/ton-anywhere/my-favorite-prompts/metaprompt/`
-
----
-
-## Agent Feedback
-
-When the user provides feedback about agent performance, **always** append it to the agents feedback log:
-
-- **File:** `/home/airtonp/code/ton-anywhere/my-favorite-prompts/feedbacks/agents_feedback.md`
-- **Format:** Add a new row at the bottom of the markdown table with format: `Agent \| Feedback \| No`
+- "dotfiles" => `/home/airtonp/code/ton-anywhere/dotfiles`
+- "skills" => `/home/airtonp/code/ton-anywhere/my-favorite-prompts/skills/`
 
 ---
 
