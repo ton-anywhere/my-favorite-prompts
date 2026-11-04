@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: edge-for-import-and-instantiation
+expected_outcome: |
+  The agent decides a dependency diagram gets an edge when a module imports and instantiates another module.

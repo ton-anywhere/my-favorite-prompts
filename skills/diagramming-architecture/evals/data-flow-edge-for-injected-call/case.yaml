@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: data-flow-edge-for-injected-call
+expected_outcome: |
+  The agent decides a data-flow diagram draws an edge from a module to the adapter it calls through an injected interface, without an interface node.

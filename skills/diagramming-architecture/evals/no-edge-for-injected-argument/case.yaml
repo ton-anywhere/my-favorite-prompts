@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: no-edge-for-injected-argument
+expected_outcome: |
+  The agent decides a dependency diagram gets no edge from a module to a collaborator it only receives as an argument and calls.

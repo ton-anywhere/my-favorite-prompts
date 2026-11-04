@@ -52,6 +52,8 @@ Every diagram answers one question. Read its heading and notes, decide which kin
 | `main --> registry` because main imports `createRegistry` and passes it on | Wiring; no edge in either kind |
 | An interface node in a data-flow diagram (`tasks --> multiplexer --> herdr`) | `tasks --> herdr` |
 | `steps --> herdr` in a dependency diagram because steps calls Herdr at runtime | The application points at the contracts; the call belongs in the data-flow diagram |
+| `steps --> states` because `createSteps({ states })` receives it and calls it | Wiring (Shared rules): no edge in the dependency diagram. Draw one only when A imports or instantiates B; the call may be a data-flow edge |
+| A separate node for a construct that lives inside each entity, such as its state machine | Part of that entity's module, not a node others depend on |
 | `app/store.ts`, `agent.sqlite`, `MLX server :8440` as nodes | `durable state`, `inference provider`; details in the prose |
 | Editing the diagram because a task landed | Leave it; change it only for an approved design change |
 | A dashed or labelled edge explaining how a value arrives ("uses injected env") | A plain edge, or none |
