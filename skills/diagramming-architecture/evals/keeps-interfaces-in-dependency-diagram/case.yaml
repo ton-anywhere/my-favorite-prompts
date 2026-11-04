@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: keeps-interfaces-in-dependency-diagram
+expected_outcome: |
+  The agent does not add an application-to-adapter edge to the Module dependencies diagram and explains that the application depends on the contracts, while the runtime call belongs to the Request flow diagram.

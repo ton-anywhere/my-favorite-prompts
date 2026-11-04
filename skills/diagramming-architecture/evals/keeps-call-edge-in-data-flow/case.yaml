@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: keeps-call-edge-in-data-flow
+expected_outcome: |
+  The agent keeps `checkout --> stripe` and adds no interface node, explaining that a data-flow diagram hides interfaces and points at what the call reaches.

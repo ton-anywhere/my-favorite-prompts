@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: refuses-wiring-edges
+expected_outcome: |
+  The agent leaves both diagrams unchanged and tells the reviewer the proposed edges are wiring (construction, imports passed on), which no architecture diagram draws.

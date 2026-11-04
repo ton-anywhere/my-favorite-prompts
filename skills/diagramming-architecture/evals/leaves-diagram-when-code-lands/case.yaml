@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: leaves-diagram-when-code-lands
+expected_outcome: |
+  The agent leaves the Request flow diagram unchanged: the code landing is not a design change, and file names, Postgres, Redis, and ports are details for the prose.
