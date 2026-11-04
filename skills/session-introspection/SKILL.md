@@ -24,7 +24,12 @@ truth.
 3. Inspect the used skills and prompts against what happened in the session.
 4. Report only gaps, inconsistencies, conflicts, or missed instructions that
    the session evidence supports. Do not propose general improvements.
-5. For each supported issue, create one ranked recommendation.
+5. For each supported issue, create one ranked recommendation with one action:
+   - **Patch** an existing skill or prompt when its guidance caused or allowed
+     the issue.
+   - **New skill** when the session shows a reusable rule or technique that no
+     existing skill covers, such as a correction the user made that would recur
+     in other sessions or projects.
 
 Do not infer that a skill was used from the task topic or from behavior alone.
 Do not classify missing skills or inferred skills as used skills. If the session
@@ -45,14 +50,18 @@ Use one compact finding card per recommendation:
 
 ```text
 P1 · High impact · High confidence
-Target: <skill or prompt file>
+Action: <Patch | New skill>
+Target: <skill or prompt file | proposed skill name>
 
 Issue: <observed problem>
 Evidence: <brief session evidence>
 Explanation: <high-level reason the guidance should change>
 
-Replace with:
+Replace with:   (Patch)
 <exact replacement Markdown or prompt text>
+
+Draft:          (New skill)
+<frontmatter name and "Use when..." description, then the core rule>
 ```
 
 Rank recommendations by expected impact first, then by confidence. Use lower
@@ -66,3 +75,6 @@ No evidence-based changes recommended.
 ```
 
 Do not apply any recommendation automatically.
+
+**REQUIRED SUB-SKILL:** When the user approves a recommendation, patch or new
+skill, apply it with `writing-skills`.
