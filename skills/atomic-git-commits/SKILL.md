@@ -4,6 +4,7 @@ description: "Authoritative for commit-message format (Conventional Commits) and
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
+  version: v2.0
 ---
 
 # Atomic Git Commits
