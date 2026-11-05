@@ -8,7 +8,7 @@ metadata:
 
 # Code Comments Standard
 
-Comments exist to transfer knowledge that cannot be read from the code itself. A comment that restates what the code does is noise. A comment that explains *why* it does it — or warns of a non-obvious consequence — is essential.
+Comments exist to transfer knowledge that cannot be read from the code itself. A comment that restates what the code does is noise. A comment that explains *why* it does it — or warns of a non-obvious consequence — is essential, but only when a better name cannot carry it.
 
 ---
 
@@ -49,6 +49,29 @@ If a route or config is consumed by load balancers, uptime monitors, or tracing 
 
 ---
 
+## Prefer a rename, not a comment
+
+A comment that explains what a name does not is a naming defect. Before writing or keeping one, try to encode it:
+
+| Comment | Better |
+|---|---|
+| `// One function per transition` | helper named `transition(…)`, callers `stepStateMachine.run(…)` |
+| `// Conventional Commits type prefixes` | `CONVENTIONAL_COMMIT_TYPES` |
+| `// Change the state` | `transition(...)` / `markLost(...)` |
+| `// T is unconstrained; an async callback runs writes outside this commit` | keep the comment: no name carries it |
+
+Rule: if a competent reader still cannot learn the fact after a rename, it is a comment; otherwise it is a rename.
+
+---
+
+## Contracts: own vs external
+
+- **External contract** — another team's API, library behavior, CLI exit codes, wire format, database, protocol: document it at the boundary; the reader cannot check it from this repository.
+- **Internal contract** — an interface or type whose every implementer and caller live in this repository: no per-member doc comments. Behavior belongs to the implementation and its tests; the signature already carries names and types.
+- Before deleting a doc comment, search for references to it (`docs/`, `tasks/`, `AGENTS.md`, `README`). A pointer such as "`Notifier` in `interfaces.ts` carries this constraint" goes stale silently.
+
+---
+
 ## Remove or Skip Comments When
 
 **The comment restates the code.**
@@ -80,3 +103,13 @@ Before writing or keeping a comment, ask: *"Would a competent developer, reading
 
 - **No** → keep the comment.
 - **Yes** → remove it.
+
+---
+
+## Auditing a branch
+
+1. Inventory added comments: `git diff main...HEAD | grep -E '^\+\s*(//|/\*\*|\*)'`.
+   A pattern that excludes a second non-`+` character misses plain `+//` lines entirely.
+2. Classify each hit: narrates-code, why, external contract, or tool-mandated (restart warnings, `shortcut:` markers, usage headers).
+3. Narrates-code → rename or restructure, then delete. Everything else → judge against the sections above.
+4. Delete one comment per edit, so each removal is reviewable.
