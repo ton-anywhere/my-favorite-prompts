@@ -28,6 +28,12 @@ When the user refers to a folder without a full path, resolve using these mappin
 
 ---
 
+## Documentation
+
+- One canonical doc per fact; every other doc keeps a one-line summary and a pointer, never a copy.
+
+---
+
 ## ai-memory
 
 - Every `memory_handoff_*` and `memory_write_page` call passes `workspace` **and** `project` explicitly. No session id reaches the MCP server, so an unscoped call lands in whichever project published the active-project pointer last.
