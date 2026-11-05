@@ -1,6 +1,6 @@
 ---
 name: verify-specs
-description: Use before creating, modifying, reviewing, or refactoring spec test files. Better Specs compliance, especially around one behavior per example, meaningful example names, describe/context structure, behavior-over-implementation assertions, `expect` syntax, or spec readability and maintainability problems.
+description: Use before creating, modifying, reviewing, or refactoring spec test files, RSpec or TypeScript/JavaScript (node:test, Vitest, Jest). Better Specs compliance, especially around one behavior per example, meaningful example names, describe/context structure, behavior-over-implementation assertions, `expect` syntax, or spec readability and maintainability problems.
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
@@ -10,7 +10,20 @@ metadata:
 
 ## Overview
 
-Review RSpec code against Better Specs and return concrete, file-specific findings. Focus on issues that make specs misleading, brittle, hard to debug, or unnecessarily hard to read.
+Review spec code against Better Specs and return concrete, file-specific findings. Focus on issues that make specs misleading, brittle, hard to debug, or unnecessarily hard to read.
+
+## Language Routing
+
+Pick the audit scripts by the spec file's language. The two families report the same format.
+
+| Specs | Run audits with | `--all` scans |
+|---|---|---|
+| RSpec (`*_spec.rb`) | `ruby skills/verify-specs/scripts/ruby/<audit>.rb` | `spec/**/*_spec.rb` |
+| TypeScript/JavaScript (`*.test.ts`, `*.spec.ts`, `.js`/`.mjs`/`.tsx`) | `node --experimental-strip-types skills/verify-specs/scripts/ts/<audit>.ts` | `**/*.{test,spec}.*`, skipping `node_modules` |
+
+A run that reports `0 file(s)` on specs you know exist means the wrong family ran; switch scripts rather than treating it as a pass.
+
+For TypeScript specs, read the RSpec terms below through this mapping: `context` → nested `describe`; `let`/`before` → variables assigned in `beforeEach`; `let(:result)` → a `beforeEach` that stores the action's result; `expect(...)` → any assertion call (`assert.*`, `expect`); `expect { }.to raise_error` → `assert.throws`/`assert.rejects` with the action inside.
 
 ## Review Mode
 
@@ -31,19 +44,16 @@ Treat this as a spec review, not a generic style pass. Prioritize problems that 
 
 ## Mandatory First Pass — Condition Word Audit
 
-Before applying any other checklist items, run the audit script against the specific spec file under review:
+Before applying any other checklist items, run the audit script for the spec's language (see [Language Routing](#language-routing)) against the specific spec file under review:
 
 ```bash
-ruby skills/verify-specs/scripts/condition_word_audit.rb spec/path/example_spec.rb
+ruby skills/verify-specs/scripts/ruby/condition_word_audit.rb spec/path/example_spec.rb
+node --experimental-strip-types skills/verify-specs/scripts/ts/condition_word_audit.ts test/example.test.ts
 ```
 
-For whole-project reviews only, run:
+For whole-project reviews only, pass `--all` instead of a path.
 
-```bash
-ruby skills/verify-specs/scripts/condition_word_audit.rb --all
-```
-
-The script flags candidate `it`/`specify` descriptions containing `when`, `with`, `without`, `for`, or `and`.
+The script flags candidate `it`/`specify` (and `test`) descriptions containing `when`, `with`, `without`, `for`, or `and`.
 
 **Procedure:**
 1. Run the script for the predetermined spec file, or `--all` only when reviewing the whole project.
@@ -55,19 +65,16 @@ The script flags candidate `it`/`specify` descriptions containing `when`, `with`
 
 ## Mandatory Expectation Count Audit
 
-Before applying any other checklist items, run the expectation count audit against the specific spec file under review:
+Before applying any other checklist items, run the expectation count audit for the spec's language against the specific spec file under review:
 
 ```bash
-ruby skills/verify-specs/scripts/expectation_count_audit.rb spec/path/example_spec.rb
+ruby skills/verify-specs/scripts/ruby/expectation_count_audit.rb spec/path/example_spec.rb
+node --experimental-strip-types skills/verify-specs/scripts/ts/expectation_count_audit.ts test/example.test.ts
 ```
 
-For whole-project reviews only, run:
+For whole-project reviews only, pass `--all` instead of a path.
 
-```bash
-ruby skills/verify-specs/scripts/expectation_count_audit.rb --all
-```
-
-The script flags `it`/`specify` blocks containing more than one `expect(...)`.
+The script flags examples containing more than one assertion: `expect(...)` in RSpec; `assert(...)`, `assert.*(...)` or `expect(...)` in TypeScript.
 
 **Procedure:**
 1. Run the script for the predetermined spec file, or `--all` only when reviewing the whole project.

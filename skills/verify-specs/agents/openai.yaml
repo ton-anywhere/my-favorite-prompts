@@ -1,4 +1,4 @@
 interface:
   display_name: "Verify Specs"
-  short_description: "Review RSpec against Better Specs"
-  default_prompt: "Use $verify-specs to review this RSpec code for Better Specs compliance."
+  short_description: "Review RSpec or TypeScript specs against Better Specs"
+  default_prompt: "Use $verify-specs to review these specs for Better Specs compliance."

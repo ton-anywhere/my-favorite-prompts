@@ -1,11 +1,19 @@
 #!/usr/bin/env ruby
-# Scan RSpec examples for multiple expect(...) calls.
+# Scan RSpec example descriptions for BDD structure-smell keywords.
 #
 # Usage:
-#   ruby skills/verify-specs/scripts/expectation_count_audit.rb spec/path/example_spec.rb
-#   ruby skills/verify-specs/scripts/expectation_count_audit.rb --all
+#   ruby skills/verify-specs/scripts/ruby/condition_word_audit.rb spec/path/example_spec.rb
+#   ruby skills/verify-specs/scripts/ruby/condition_word_audit.rb --all
 
 require "optparse"
+
+TRIGGERS = {
+  "when" => "condition",
+  "with" => "condition",
+  "without" => "condition",
+  "for" => "condition",
+  "and" => "split"
+}.freeze
 
 EXAMPLE_PATTERN = /^\s*(?:it|specify)\s*(?:\.(?:only|skip|pending)\s*)?(?<quote>["'])(?<desc>.*?)(\k<quote>)/
 MAX_DESC = 72
@@ -52,34 +60,23 @@ end
 results = []
 
 files.each do |filepath|
-  lines = File.readlines(filepath, chomp: true)
   file_hits = []
-  current = nil
-  block_depth = 0
 
-  lines.each_with_index do |line, idx|
-    if current.nil?
-      match = EXAMPLE_PATTERN.match(line)
-      next unless match
+  File.foreach(filepath, chomp: true).each_with_index do |line, idx|
+    match = EXAMPLE_PATTERN.match(line)
+    next unless match
 
-      desc = match[:desc]
-      display = desc.length > MAX_DESC ? "#{desc[0, MAX_DESC - 3]}..." : desc
-      current = {
-        line: idx + 1,
-        desc: display,
-        expects: 0
-      }
-      block_depth = 0
-    end
+    desc = match[:desc]
+    words = TRIGGERS.keys.select { |word| desc.match?(/\b#{Regexp.escape(word)}\b/i) }
+    next if words.empty?
 
-    current[:expects] += line.scan(/\bexpect\s*\(/).size
-    block_depth += line.scan(/\bdo\b/).size
-    block_depth -= line.scan(/^\s*end\s*$/).size
-
-    next unless block_depth <= 0
-
-    file_hits << current if current[:expects] > 1
-    current = nil
+    display = desc.length > MAX_DESC ? "#{desc[0, MAX_DESC - 3]}..." : desc
+    file_hits << {
+      line: idx + 1,
+      desc: display,
+      words: words.sort,
+      kinds: words.map { |word| TRIGGERS.fetch(word) }.uniq.sort
+    }
   end
 
   results << [filepath, file_hits] if file_hits.any?
@@ -88,11 +85,13 @@ end
 results.each do |filepath, hits|
   puts filepath
   hits.each do |hit|
-    printf("  Line %-4d [?] %-72s  expect calls: %d\n", hit[:line], hit[:desc], hit[:expects])
+    words = hit[:words].map { |word| %("#{word}") }.join(", ")
+    kinds = hit[:kinds].join("/")
+    printf("  Line %-4d [?] %-72s  %s: %s\n", hit[:line], hit[:desc], kinds, words)
   end
   puts
 end
 
 flagged_count = results.sum { |_filepath, hits| hits.size }
-puts "Summary: #{flagged_count} multi-expectation example(s) across #{results.size} file(s)"
+puts "Summary: #{flagged_count} candidate(s) across #{results.size} file(s)"
 puts "Note: candidates require reviewer judgment; this does not replace the full verify-specs review."
