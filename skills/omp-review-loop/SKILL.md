@@ -110,8 +110,17 @@ Everything below is typed into the omp TUI. Do not use `herdr agent prompt`; it 
 6. Update the state file with `rounds`, `last_fingerprint`, and `last_verdict`.
 
 7. Branch on the verdict:
-   - `APPROVE`: stop and report.
+   - `APPROVE`: handle the remaining findings as in "Post-approval", then report.
    - `REQUEST_CHANGES`: go through the numbered findings one by one and implement each one in the worktree yourself. Push back only on minor findings (severity low or nit), and only with a written reason in the report. Never decline a high or medium finding; if one seems wrong, implement it and say so in the report. Do not let the reviewer edit files. Run the repo's verification before the next round (`sh scripts/verify.sh` when the repo has it, per its AGENTS.md). Recompute `$FP`, then start the next round. If `rounds` has reached the cap, stop and report the open findings.
+
+## Post-approval
+
+After `APPROVE`, do not start another `/review` round for the same tree unless the user asks for one. The findings listed above the verdict are still open unless they were fixed:
+
+- Implement the findings you agree with, then run the repo's verification.
+- Push back on the rest with a written reason in the report. Never silently ignore a finding.
+- Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, and ask it to confirm the approval. Do not split a pane or start a reviewer.
+- If it confirms, update the state file and report. If it raises new findings, repeat this pass.
 
 ## Review prompt
 
@@ -130,7 +139,7 @@ Type this as one line into the omp input box (step 1 of the round). It is the te
 
 ## Report
 
-When the reviewer approves, stop working and report back. Do not start another round.
+When the reviewer approves, finish "Post-approval", then report back. Do not start another round.
 
 Give the user:
 
