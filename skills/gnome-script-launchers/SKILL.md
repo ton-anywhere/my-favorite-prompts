@@ -74,12 +74,24 @@ Desktop-entry quoting uses double quotes for grouped arguments; shell single-quo
 
 ## Verification
 
-Run:
+Run the checks for the launcher type:
+
+Script dispatcher:
 
 ```bash
 bash -n /absolute/path/to/control-menu.sh
 desktop-file-validate ~/.local/share/applications/control-menu.desktop
 update-desktop-database ~/.local/share/applications
 ```
+
+Binary or AppImage:
+
+```bash
+test -x /absolute/path/to/App.AppImage
+desktop-file-validate ~/.local/share/applications/app.desktop
+update-desktop-database ~/.local/share/applications
+```
+
+`desktop-file-validate` checks syntax only. For either type, also confirm that the first word of `Exec=` is an existing executable and that any absolute `Icon=` path exists.
 
 If `desktop-file-validate` is unavailable, inspect the required desktop-entry fields manually. If GNOME retains an old icon, remove and re-add the favorite after refreshing the database.
