@@ -19,11 +19,7 @@ Output only the raw message in Conventional Commits format: type(scope): descrip
 | revert | undo a previous commit |
 
 ## Verify
-Wrap it under 80 characters. Run the command below to verify your commit-message:
-
-```bash
-printf '%s' <commit-message> | wc -m
-```
+Wrap it under 10 words.
 
 ## Output
 
