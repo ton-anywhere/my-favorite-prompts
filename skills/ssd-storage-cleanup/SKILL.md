@@ -23,6 +23,8 @@ Do not clear the following without a separate, item-specific user request:
 - Global package installations, compiler toolchains, project dependencies, and build output.
 - Complete Discord or Obsidian profiles. Treat application caches as separate review items.
 - Application and agent state, including sessions, authentication, history, and local databases.
+- Manual backups (`*.bak*`, `*.bak-<version>` and similar). Only an explicitly identified stale copy may be proposed, never backups as a class.
+- Model files and runtimes under `~/.local/share` (for example `~/.local/share/hex` holds speech-to-text models). Treat them like the OMP model-runtime downloads.
 - OMP model-runtime downloads under `~/.omp/agent/cache`, including tiny, speech-to-text, and text-to-speech models.
 - Rustup toolchains and Codex application releases. Treat both as installed runtimes, not disposable caches.
 - User files in Downloads, Documents, repositories, or the Trash.
@@ -46,7 +48,7 @@ Only change a location after the user approves the exact source, destination, se
 ## Plan Before Action
 
 1. Record a baseline: `df -h /`, relevant top-level directory sizes, and `journalctl --disk-usage`. Check mount ownership and active processes before touching their data.
-2. Create two checklists before mutations: an agent checklist for exact user-owned cleanup and `/tmp/ssd-storage-cleanup-sudo-todo.md` for sudo commands the user must run personally.
+2. Create two checklists before mutations: an agent checklist for exact user-owned cleanup and a sudo checklist (`/tmp/ssd-storage-cleanup-sudo-todo.md`, or the current run's dated folder when one exists) for commands the user must run personally. Group the sudo checklist by application (apt, snap, journal, and so on), not by action. Each group is: inspect, dry-run if available, exact clean command, re-check. When the clean command depends on inspect output, mark it pending and name the output needed. Use `tail -n N`, not `tail -N`.
 3. State exact paths or cache managers, estimated reclaimable space, and exclusions. Do not start cleanup until the user explicitly confirms the reviewed checklist.
 4. Run only confirmed non-sudo items. Re-measure the affected path and `df -h /` after each item.
 5. Never request or handle a sudo password. Wait for the user to run the sudo checklist and review the output before the next recommendation.
@@ -90,10 +92,17 @@ Measure first. Include only relevant confirmed candidates in the checklist.
 | Snap revisions | `sudo snap list --all --unicode=never` | Remove only revisions marked `disabled`; keep active revisions |
 | Bun install cache | `bun pm cache` from a Bun project | `bun pm cache rm`; do not remove global packages |
 | System temporary files | `find /tmp -mindepth 1 -maxdepth 1 -mtime +30 -print`; inspect `/usr/lib/tmpfiles.d/tmp.conf` | Run `sudo systemd-tmpfiles --clean` only after review; this systemd version may not support a dry-run flag |
+| Go module cache | `du -sh $(go env GOMODCACHE)` | `go clean -modcache`, with no `go` process running |
+| Cargo registry | `du -sh ~/.cargo/registry/*` | Remove only `registry/src`, `registry/cache` and `git/checkouts`; keep `bin`, `registry/index` and `git/db`; no `cargo`, `rustc` or `napi` build running |
+| Bazel | `du -sh ~/.cache/bazel/_bazel_$USER/*`; check `ps` for `bazel` or a script driving it | `bazel shutdown`, then `bazel clean --expunge` in the owning workspace, only when no build is running |
+| Minikube | `ls ~/.minikube`; `minikube status` | `minikube delete --all --purge` after the user confirms no cluster is needed |
+| Claude versions | `ls -la ~/.local/share/claude/versions`; `readlink -f ~/.local/bin/claude` | Remove only older version files; keep the one `claude` resolves to |
 
 Snap retention cannot be set below two revisions. A disabled revision is a rollback copy, so its removal needs confirmation even though it is not active.
 
 Never delete arbitrary files in `/var/log`; manage journal size only with `journalctl`.
+
+For any Docker item, run `docker ps -a --size`, `docker images`, `docker volume ls` and `docker system df -v` first. State which running container or attached volume each image depends on. Docker "reclaimable" counts anything not tied to a running container; it is not a list of safe deletions.
 
 ## Temporary Directory Cleanup
 
