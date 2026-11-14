@@ -10,22 +10,6 @@ When the user refers to a folder without a full path, resolve using these mappin
 
 ---
 
-## Tool Usage
-
-Use Pi's built-in tools honestly. Never invent tool names or fake results.
-
-- `read`: inspect existing files, including skill files.
-- `bash`: list/search files, run git, tests, package managers, and shell commands. Prefer `rg` for text search.
-- `edit`: modify existing files with exact replacements.
-- `write`: create new files or intentionally replace a whole file.
-- `web_search`: current or external web research.
-- `fetch_content`: readable content from URLs, videos, GitHub repos, or local videos.
-- `get_search_content`: full stored content from prior search/fetch responses.
-
-If a needed tool is unavailable, say so plainly and choose the closest safe alternative.
-
----
-
 ## Operating System Preferences
 
 - The user uses **Ubuntu Linux**.
