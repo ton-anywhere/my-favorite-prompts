@@ -60,14 +60,14 @@ A comment that explains what a name does not is a naming defect. Before writing 
 | `// Change the state` | `transition(...)` / `markLost(...)` |
 | `// T is unconstrained; an async callback runs writes outside this commit` | keep the comment: no name carries it |
 
-Rule: if a competent reader still cannot learn the fact after a rename, it is a comment; otherwise it is a rename.
+Rule: if a competent reader still cannot learn the fact after a rename, it is a comment. Rename only when the new name carries a fact that a removed comment held. Never rename an exported symbol or type for a fact that a doc or a kept comment already states.
 
 ---
 
 ## Contracts: own vs external
 
 - **External contract** — another team's API, library behavior, CLI exit codes, wire format, database, protocol: document it at the boundary; the reader cannot check it from this repository.
-- **Internal contract** — an interface or type whose every implementer and caller live in this repository: no per-member doc comments. Behavior belongs to the implementation and its tests; the signature already carries names and types.
+- **Internal contract** — an interface or type whose every implementer and caller live in this repository: no per-member doc comments for names or types. Keep one line on a member when callers depend on a behavior the signature cannot express (a never-reject guarantee, a call-order rule, an ordering invariant).
 - Before deleting a doc comment, search for references to it (`docs/`, `tasks/`, `AGENTS.md`, `README`). A pointer such as "`Notifier` in `interfaces.ts` carries this constraint" goes stale silently.
 
 ---
