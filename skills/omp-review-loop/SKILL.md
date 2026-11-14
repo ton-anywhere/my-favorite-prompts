@@ -34,7 +34,7 @@ The user's original requests are in `references/user-prompts.md`.
 
 ## State
 
-State lives in `$ROOT/.agents/omp-review-loop.json`. The fingerprint script excludes this file.
+State lives in `$ROOT/.agents/omp-review-loop.json` for the reviewer named in it. A different reviewer writes its own file, `$ROOT/.agents/omp-review-loop-<reviewer>.json`. Never overwrite another reviewer's record. The fingerprint script excludes all `omp-review-loop*.json` files.
 
 ```json
 {"reviewer": "omp-review", "pane_id": "w4V:p9", "task_doc": ".agents/CLAUDE_ADAPTER_PLAN.md", "rounds": 2, "last_fingerprint": "<sha>", "last_verdict": "APPROVE"}
@@ -53,7 +53,7 @@ Create the reviewer only when no live reviewer exists. Check with `herdr agent g
 Split a new pane beside the current one. Do not use `herdr tab create`.
 
 ```sh
-herdr pane split --current --direction right --cwd "$ROOT"
+herdr pane split --current --direction right --cwd "$ROOT" --no-focus
 ```
 
 Take the new pane's `pane_id` from the output. Set `PANE=<pane_id>`, then:
@@ -111,7 +111,7 @@ Everything below is typed into the omp TUI. Do not use `herdr agent prompt`; it 
 
 7. Branch on the verdict:
    - `APPROVE`: handle the remaining findings as in "Post-approval", then report.
-   - `REQUEST_CHANGES`: go through the numbered findings one by one and implement each one in the worktree yourself. Push back only on minor findings (severity low or nit), and only with a written reason in the report. Never decline a high or medium finding; if one seems wrong, implement it and say so in the report. Do not let the reviewer edit files. Run the repo's verification before the next round (`sh scripts/verify.sh` when the repo has it, per its AGENTS.md). Recompute `$FP`, then start the next round. If `rounds` has reached the cap, stop and report the open findings.
+   - `REQUEST_CHANGES`: go through the numbered findings one by one and implement each one in the worktree yourself. Map severities: P1 is high, P2 is medium, P3 is low or nit. Push back only on P3 findings. Send each pushback to the reviewer pane as a plain message and wait for its ACCEPT or REJECT before the next round; record the outcome in the report. Never decline a P1 or P2 finding; if one seems wrong, implement it and say so. Do not let the reviewer edit files. Run the repo's verification before the next round (`sh scripts/verify.sh` when the repo has it, per its AGENTS.md). Recompute `$FP`, then start the next round. If `rounds` has reached the cap, stop and report the open findings.
 
 ## Post-approval
 
@@ -119,7 +119,7 @@ After `APPROVE`, do not start another `/review` round for the same tree unless t
 
 - Implement the findings you agree with, then run the repo's verification.
 - Push back on the rest with a written reason in the report. Never silently ignore a finding.
-- Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, and ask it to confirm the approval. Do not split a pane or start a reviewer.
+- Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, to report what was fixed. Do not split a pane or start a reviewer. A plain message cannot verify changed code: if the tree changed after the approval, run a new `/review` round on the current tree, and record APPROVE only from that round's verdict.
 - If it confirms, update the state file and report. If it raises new findings, repeat this pass.
 
 ## Review prompt

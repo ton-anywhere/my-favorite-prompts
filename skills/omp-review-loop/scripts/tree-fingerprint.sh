@@ -5,7 +5,7 @@
 set -eu
 
 cd "$(git rev-parse --show-toplevel)"
-state=':(exclude).agents/omp-review-loop.json'
+state=':(exclude).agents/omp-review-loop*.json'
 
 {
   git diff HEAD --binary -- . "$state"
