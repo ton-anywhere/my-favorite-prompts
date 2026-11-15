@@ -33,6 +33,7 @@ Both modes stay in your own workspace (`WS=$(herdr pane current)`, its `workspac
 - Tabs: one review tab for the whole loop. Keep it open at the end.
 - Task doc: Provided by ask the user. Otherwise, infer it from the available info from the code, commit messages, branch name.
 - Round cap: `--max-rounds N`, default 5. At the cap, stop and report.
+- Pushback: do not accept findings blindly. Judge each one on its merits, at any severity (P1, P2, P3, nit), and push back on every finding you believe is wrong, unnecessary, out of scope, or against the task doc, with a concrete technical reason (code, test, or doc evidence). Implement the findings you accept. If the reviewer REJECTs a pushback with a sound counter-argument, implement the finding; otherwise hold your position and report it.
 
 ## Preflight
 
@@ -121,14 +122,14 @@ Everything below is typed into the omp TUI. Do not use `herdr agent prompt`; it 
 
 7. Branch on the verdict:
    - `APPROVE`: handle the remaining findings as in "Post-approval", then report.
-   - `REQUEST_CHANGES`: go through the numbered findings one by one and implement each one in the worktree yourself. Map severities: P1 is high, P2 is medium, P3 is low or nit. Push back only on P3 findings. Send each pushback to the reviewer pane as a plain message and wait for its ACCEPT or REJECT before the next round; record the outcome in the report. Never decline a P1 or P2 finding; if one seems wrong, implement it and say so. Do not let the reviewer edit files. Run the repo's verification before the next round (`sh scripts/verify.sh` when the repo has it, per its AGENTS.md). Recompute `$FP`, then start the next round. If `rounds` has reached the cap, stop and report the open findings.
+   - `REQUEST_CHANGES`: triage the numbered findings one by one per "Pushback", implement the ones you accept in the worktree yourself, and message the reviewer pane with the pushbacks as a plain message; wait for its ACCEPT or REJECT before the next round and record the outcome in the report. Do not let the reviewer edit files. Run the repo's verification before the next round (`sh scripts/verify.sh` when the repo has it, per its AGENTS.md). Recompute `$FP`, then start the next round. If `rounds` has reached the cap, stop and report the open findings.
 
 ## Post-approval
 
 After `APPROVE`, do not start another `/review` round for the same tree unless the user asks for one. The findings listed above the verdict are still open unless they were fixed:
 
 - Implement the findings you agree with, then run the repo's verification.
-- Push back on the rest with a written reason in the report. Never silently ignore a finding.
+- Push back on the rest per "Pushback". Never silently ignore a finding.
 - Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, to report what was fixed. Do not create a tab or start a reviewer. A plain message cannot verify changed code: if the tree changed after the approval, run a new `/review` round on the current tree, and record APPROVE only from that round's verdict.
 - If it confirms, update the state file and report. If it raises new findings, repeat this pass.
 

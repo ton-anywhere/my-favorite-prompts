@@ -25,7 +25,7 @@ State file: `$ROOT/.agents/omp-review-loop-<label>.json`, same schema, `reviewer
 ## Loop
 
 1. Read the peer's findings: `herdr agent read "$PANE" --source recent-unwrapped --lines 240`, increasing `--lines` until the first finding is in view. Read the whole block.
-2. Triage every finding. Implement the ones you agree with. Push back on the ones you disagree with, with a reason. Keep the P1/P2/P3 rule from launch mode when the peer uses severities; otherwise, never decline a finding that is a correctness, security, or data-loss defect.
+2. Triage every finding per "Pushback" in `SKILL.md`: implement the ones you accept, push back on the ones you disagree with, at any severity.
 3. Run the repo's verification (`sh scripts/verify.sh` when the repo has it) after the fixes.
 4. Message the peer with `herdr agent prompt "$PANE" "<message>" --wait`: say what was fixed, what you disagree with and why, and ask for its verdict. On the first message, ask it to end with one line `Verdict: APPROVE` or `Verdict: REQUEST_CHANGES`.
 5. Read the reply. Extract the last `verdict: approve|request[ _]changes` match, case-insensitively. If the peer approves in prose without that line, ask it once for the explicit verdict line. If there is still none, report "no verdict" and stop.
