@@ -114,7 +114,7 @@ Everything below is typed into the omp TUI. Do not use `herdr agent prompt`; it 
    herdr agent read omp-review --source recent-unwrapped --lines 240
    ```
 
-   Take the last match of `grep -oiE 'verdict: *(approve|request[ _]changes)'`. Match case-insensitively: `Verdict:`, `VERDICT:`, `REQUEST CHANGES`, and `REQUEST_CHANGES` all occur. If there is no match, read more lines. If it still has no match, report "no verdict" and stop. Do not guess.
+   Extract the verdict from the reviewer's final findings block only, never from the echoed prompt above it: the prompt you sent contains both literal verdict strings, so a whole-pane grep returns false matches. Take that block's last `Verdict:` line (`Verdict: APPROVE` / `Verdict: REQUEST_CHANGES`, case-insensitive; `REQUEST CHANGES` and `REQUEST_CHANGES` both occur). If there is no match, read more lines. If it still has no match, report "no verdict" and stop. Do not guess.
 
    The verdict is only the last line. Keep the numbered findings above it. Read the whole findings block, increasing `--lines` until its first finding is in view. If the block is cut off, read further up before acting on it.
 
