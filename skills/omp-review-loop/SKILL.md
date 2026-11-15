@@ -1,6 +1,6 @@
 ---
 name: omp-review-loop
-description: Run an omp /review loop in one herdr pane (never a tab) against the uncommitted changes, fixing findings until the reviewer approves. Invoke only by hand.
+description: Run an omp /review loop in one herdr tab labeled `reviewer` (never a split pane) against the uncommitted changes, fixing findings until the reviewer approves. Invoke only by hand.
 argument-hint: "[task-doc-path] [--max-rounds N]"
 disable-model-invocation: true
 license: MIT
@@ -18,9 +18,10 @@ The user's original requests are in `references/user-prompts.md`.
 
 - Reviewer: always omp (`--kind omp`). Never codex, claude, or a subagent unless the user names one.
 - Review target: "Review against the base branch (PR Style)" per default (option 1). Use "Review uncommitted changes" (option 2) if there are unstaged changes.
-- Driver: the dev agent that runs this skill launches the pane and drives the omp menu itself. Do not hand the herdr steps to a subagent.
-- Location: the reviewer runs in a herdr **pane**, split beside your current pane. Never create a tab. A tab is a separate screen and is hard for the user to find.
-- Panes: one review pane for the whole loop. Keep it open at the end.
+- Driver: the dev agent that runs this skill launches the tab and drives the omp menu itself. Do not hand the herdr steps to a subagent.
+- Location: the reviewer runs in its own herdr **tab**, created with `herdr tab create`. Never split a pane for it.
+- Label: the tab MUST carry the label `reviewer` (`--label reviewer`).
+- Tabs: one review tab for the whole loop. Keep it open at the end.
 - Task doc: Provided by ask the user. Otherwise, infer it from the available info from the code, commit messages, branch name.
 - Round cap: `--max-rounds N`, default 5. At the cap, stop and report.
 
@@ -50,19 +51,19 @@ Decide before launching anything:
 
 Create the reviewer only when no live reviewer exists. Check with `herdr agent get <reviewer>`. If the agent is live and idle, reuse it.
 
-Split a new pane beside the current one. Do not use `herdr tab create`.
+Create a new tab with the label `reviewer`. Do not use `herdr pane split`.
 
 ```sh
-herdr pane split --current --direction right --cwd "$ROOT" --no-focus
+herdr tab create --cwd "$ROOT" --label reviewer --no-focus
 ```
 
-Take the new pane's `pane_id` from the output. Set `PANE=<pane_id>`, then:
+Take the pane to use from `.result.root_pane` in the output (`.result.tab` is the tab ID). Set `PANE=<root_pane id>`, then:
 
 ```sh
 herdr agent start omp-review --kind omp --pane "$PANE"
 ```
 
-Save the reviewer name and pane to the state file.
+Save the reviewer name and `$PANE` (the tab's root pane) to the state file.
 
 Wait until the omp TUI is ready for input: `herdr agent get omp-review` shows `interactive_ready: true` and `agent_status: idle`. Then read the pane and confirm the input box is visible.
 
@@ -119,7 +120,7 @@ After `APPROVE`, do not start another `/review` round for the same tree unless t
 
 - Implement the findings you agree with, then run the repo's verification.
 - Push back on the rest with a written reason in the report. Never silently ignore a finding.
-- Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, to report what was fixed. Do not split a pane or start a reviewer. A plain message cannot verify changed code: if the tree changed after the approval, run a new `/review` round on the current tree, and record APPROVE only from that round's verdict.
+- Message the same reviewer pane with a plain message (not a `/review` command) using `herdr agent prompt "$PANE" "<message>" --wait`, to report what was fixed. Do not create a tab or start a reviewer. A plain message cannot verify changed code: if the tree changed after the approval, run a new `/review` round on the current tree, and record APPROVE only from that round's verdict.
 - If it confirms, update the state file and report. If it raises new findings, repeat this pass.
 
 ## Review prompt
@@ -133,7 +134,7 @@ Type this as one line into the omp input box (step 1 of the round). It is the te
 ## Failure handling
 
 - Usage limit or quota message in the reviewer pane: stop, report the message and the reset time, and keep the state file.
-- The agent does not start or the menu never appears: report the screen output. Do not split a second pane or create a tab to retry.
+- The agent does not start or the menu never appears: report the screen output. Do not create a second tab or split a pane to retry.
 - The reviewer edits files despite the prompt: inspect the change with `git diff`, record it in the report, and rerun verification.
 - If the same review request arrives after an APPROVE, do not launch. Reply with the existing approval, its pane ID, and the current git state.
 
@@ -148,4 +149,4 @@ Give the user:
 - For each round, what was fixed and what was left open.
 - Whether the tree is approved (fingerprint recorded) and whether anything is uncommitted.
 
-Do not close the reviewer pane unless the user asks.
+Do not close the reviewer tab unless the user asks.
