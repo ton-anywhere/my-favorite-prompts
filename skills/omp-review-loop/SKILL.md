@@ -1,7 +1,7 @@
 ---
 name: omp-review-loop
-description: Run an omp /review loop in one herdr tab labeled `reviewer` (never a split pane) against the uncommitted changes, fixing findings until the reviewer approves. Invoke only by hand.
-argument-hint: "[task-doc-path] [--max-rounds N]"
+description: Drive a herdr review loop until the reviewing agent approves, fixing its findings. Launch mode starts an omp reviewer in a tab labeled `reviewer`; peer mode (`--peer <label>`) loops with an already running agent such as `architect` or `tester`. Invoke only by hand.
+argument-hint: "[task-doc-path] [--peer <label>] [--max-rounds N]"
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -10,9 +10,18 @@ metadata:
 
 # OMP Review Loop
 
-Run this only when the user invokes it. The loop is complete when the omp reviewer returns `Verdict: APPROVE` for the current tree. Then stop. Do not start another reviewer for the same tree.
+Run this only when the user invokes it. The loop is complete when the reviewing agent returns `Verdict: APPROVE` for the current tree. Then stop.
 
 The user's original requests are in `references/user-prompts.md`.
+
+## Modes
+
+Pick the mode from the request, before anything else:
+
+- **Launch** (default; plain dev + reviewer): you start a new omp agent in a tab labeled `reviewer` and drive its `/review`. Everything below applies. Do not start another reviewer for the same tree.
+- **Peer** (`--peer <label>`, or the user says the review came from the architect, the tester, or another named agent): the agent already exists on a tab with that label. You do not launch it; you read its findings, fix or push back, message it, and repeat until it approves. Read [references/peer-mode.md](references/peer-mode.md) and follow it instead of "Reviewer setup", "Round", and the launch-only parts of "Fixed choices". Preflight and State still apply, except the "something to review" check.
+
+Both modes stay in your own workspace (`WS=$(herdr pane current)`, its `workspace_id`). A tab or agent with the same label or name in another workspace is never yours: do not read, message, or reuse it. Pass `--workspace "$WS"` to `herdr tab list`, `herdr pane list`, and `herdr tab create`.
 
 ## Fixed choices
 

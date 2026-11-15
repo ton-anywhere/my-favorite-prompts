@@ -1,6 +1,6 @@
 interface:
   display_name: "OMP Review Loop"
-  short_description: "Run an omp /review loop in herdr until approved"
+  short_description: "Review loop in herdr until approved: launch a reviewer or loop with architect/tester"
 
 policy:
   allow_implicit_invocation: false
