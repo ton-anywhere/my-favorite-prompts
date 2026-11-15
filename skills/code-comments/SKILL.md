@@ -14,7 +14,9 @@ Comments exist to transfer knowledge that cannot be read from the code itself. A
 
 ## Comment Budget
 
-Comments are the exception, not the frame. In a short single-purpose script, one file-level "why" comment plus at most one inline warning is the ceiling. A header does not need to restate the call flow; the code already carries it.
+Default is none. The allowlist below is exhaustive, and every admitted "why" is one line adjacent to the construct it constrains: no multi-line rationale, no file-level header. The restart warning and the commented-out template are the only block forms.
+
+If the fact is a number, an ordering, or an invariant, it is not a comment: it belongs in a name, an assertion, or a test. An invariant a test can hold is never a comment.
 
 ---
 
