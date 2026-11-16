@@ -14,7 +14,7 @@ Use when the user names an existing agent by tab label (`architect`, `tester`, o
 ## Find the peer
 
 ```sh
-PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh <label>)
+PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh <label> "$HERDR_WORKSPACE_ID")
 ```
 
 It resolves the label inside your workspace only and prints the pane id; it exits 1 when no tab matches, when several do, or when the tab has no agent — then stop and report. Address the peer by pane ID with `herdr agent read/prompt "$PANE"`. Agent names are not workspace-scoped for your purposes: never address the peer by name.

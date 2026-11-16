@@ -21,7 +21,7 @@ Pick the mode from the request, before anything else:
 - **Launch** (default; plain dev + reviewer): you start a new omp agent in a tab labeled `reviewer` and drive its `/review`. Everything below applies. Do not start another reviewer for the same tree.
 - **Peer** (`--peer <label>`, or the user says the review came from the architect, the tester, or another named agent): the agent already exists on a tab with that label. You do not launch it; you read its findings, fix or push back, message it, and repeat until it approves. Read [references/peer-mode.md](references/peer-mode.md) and follow it instead of "Reviewer setup", "Round", and the launch-only parts of "Fixed choices". Preflight and State still apply, except the "something to review" check.
 
-Both modes stay in your own workspace (`WS=$HERDR_WORKSPACE_ID`). A tab or agent with the same label or name in another workspace is never yours: do not read, message, or reuse it. Pass `--workspace "$WS"` to `herdr tab list`, `herdr pane list`, and `herdr tab create`.
+Both modes stay in your own workspace (`$HERDR_WORKSPACE_ID`). A tab or agent with the same label or name in another workspace is never yours: do not read, message, or reuse it. Pass `--workspace "$HERDR_WORKSPACE_ID"` to `herdr tab list`, `herdr pane list`, and `herdr tab create`.
 
 ## Fixed choices
 
@@ -62,7 +62,7 @@ Decide before launching anything:
 Create the reviewer only when no live reviewer exists. Find a live reviewer by its tab label, which is scoped to your workspace:
 
 ```sh
-PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh reviewer)
+PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh reviewer "$HERDR_WORKSPACE_ID")
 ```
 
 It prints the pane id (exit 0) or exits 1 when this workspace has no `reviewer` tab or that tab has no agent. If it prints a pane and `herdr agent get "$PANE"` shows the agent live and idle, reuse it. Agent names resolve session-wide, so never look the reviewer up by name.
@@ -70,7 +70,7 @@ It prints the pane id (exit 0) or exits 1 when this workspace has no `reviewer` 
 Create a new tab with the label `reviewer`. Do not use `herdr pane split`.
 
 ```sh
-herdr tab create --cwd "$ROOT" --label reviewer --no-focus
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$ROOT" --label reviewer --no-focus
 ```
 
 Take the pane to use from `.result.root_pane` in the output (`.result.tab` is the tab ID). Set `PANE=<root_pane id>`, then:
