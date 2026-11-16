@@ -62,7 +62,7 @@ Decide before launching anything:
 Create the reviewer only when no live reviewer exists. Find a live reviewer by its tab label, which is scoped to your workspace:
 
 ```sh
-PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh reviewer "$HERDR_WORKSPACE_ID")
+PANE=$(bash scripts/find-agent-pane.sh reviewer "$HERDR_WORKSPACE_ID")
 ```
 
 It prints the pane id (exit 0) or exits 1 when this workspace has no `reviewer` tab or that tab has no agent. If it prints a pane and `herdr agent get "$PANE"` shows the agent live and idle, reuse it. Agent names resolve session-wide, so never look the reviewer up by name.
