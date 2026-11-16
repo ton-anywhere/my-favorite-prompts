@@ -21,7 +21,7 @@ Pick the mode from the request, before anything else:
 - **Launch** (default; plain dev + reviewer): you start a new omp agent in a tab labeled `reviewer` and drive its `/review`. Everything below applies. Do not start another reviewer for the same tree.
 - **Peer** (`--peer <label>`, or the user says the review came from the architect, the tester, or another named agent): the agent already exists on a tab with that label. You do not launch it; you read its findings, fix or push back, message it, and repeat until it approves. Read [references/peer-mode.md](references/peer-mode.md) and follow it instead of "Reviewer setup", "Round", and the launch-only parts of "Fixed choices". Preflight and State still apply, except the "something to review" check.
 
-Both modes stay in your own workspace (`WS=$(herdr pane current)`, its `workspace_id`). A tab or agent with the same label or name in another workspace is never yours: do not read, message, or reuse it. Pass `--workspace "$WS"` to `herdr tab list`, `herdr pane list`, and `herdr tab create`.
+Both modes stay in your own workspace (`WS=$HERDR_WORKSPACE_ID`). A tab or agent with the same label or name in another workspace is never yours: do not read, message, or reuse it. Pass `--workspace "$WS"` to `herdr tab list`, `herdr pane list`, and `herdr tab create`.
 
 ## Fixed choices
 
@@ -41,7 +41,7 @@ Both modes stay in your own workspace (`WS=$(herdr pane current)`, its `workspac
 2. `ROOT=$(git rev-parse --show-toplevel)`. Use the absolute `$ROOT` for every `--cwd`. A relative or `$PWD` value can land the pane in the wrong directory.
 3. There must be something to review: uncommitted changes (`git -C "$ROOT" status --porcelain` is non-empty) or commits ahead of the base (`git -C "$ROOT" rev-list --count <base>..HEAD` is greater than 0). If neither, stop: there is nothing to review. The base defaults to `main`.
 4. If you received a doc, reference only it on the review reques. Do not open other plan or docs.
-5. Fingerprint: `FP=$(sh <skill base directory>/scripts/tree-fingerprint.sh)`.
+5. Fingerprint: `FP=$(bash <skill base directory>/scripts/tree-fingerprint.sh)`.
 
 ## State
 
@@ -59,7 +59,13 @@ Decide before launching anything:
 
 ## Reviewer setup
 
-Create the reviewer only when no live reviewer exists. Check with `herdr agent get <reviewer>`. If the agent is live and idle, reuse it.
+Create the reviewer only when no live reviewer exists. Find a live reviewer by its tab label, which is scoped to your workspace:
+
+```sh
+PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh reviewer)
+```
+
+It prints the pane id (exit 0) or exits 1 when this workspace has no `reviewer` tab or that tab has no agent. If it prints a pane and `herdr agent get "$PANE"` shows the agent live and idle, reuse it. Agent names resolve session-wide, so never look the reviewer up by name.
 
 Create a new tab with the label `reviewer`. Do not use `herdr pane split`.
 
@@ -73,9 +79,11 @@ Take the pane to use from `.result.root_pane` in the output (`.result.tab` is th
 herdr agent start omp-review --kind omp --pane "$PANE"
 ```
 
-Save the reviewer name and `$PANE` (the tab's root pane) to the state file.
+The name is used once, here, and only has to be unique; suffix it with the workspace id when `herdr agent list` shows a collision. Every later command takes `$PANE`, because a pane id cannot resolve into another workspace.
 
-Wait until the omp TUI is ready for input: `herdr agent get omp-review` shows `interactive_ready: true` and `agent_status: idle`. Then read the pane and confirm the input box is visible.
+Save `$PANE` (the tab's root pane) to the state file; it is the durable handle for later rounds.
+
+Wait until the omp TUI is ready for input: `herdr agent get "$PANE"` shows `interactive_ready: true` and `agent_status: idle`. Then read the pane and confirm the input box is visible.
 
 ## Round
 
@@ -105,16 +113,16 @@ Everything below is typed into the omp TUI. Do not use `herdr agent prompt`; it 
 4. Wait for the review to settle:
 
    ```sh
-   herdr agent wait omp-review --timeout 3000000
+   herdr agent wait "$PANE" --timeout 3000000
    ```
 
 5. Read the output and extract the verdict:
 
    ```sh
-   herdr agent read omp-review --source recent-unwrapped --lines 240
+   herdr agent read "$PANE" --source recent-unwrapped --lines 240
    ```
 
-   Extract the verdict from the reviewer's final findings block only, never from the echoed prompt above it: the prompt you sent contains both literal verdict strings, so a whole-pane grep returns false matches. Take that block's last `Verdict:` line (`Verdict: APPROVE` / `Verdict: REQUEST_CHANGES`, case-insensitive; `REQUEST CHANGES` and `REQUEST_CHANGES` both occur). If there is no match, read more lines. If it still has no match, report "no verdict" and stop. Do not guess.
+   Extract the verdict from the reviewer's final findings block only, never from the echoed prompt above it: the prompt you sent contains both literal verdict strings, so a whole-pane grep returns false matches. Take that block's last `Verdict:` line (`Verdict: APPROVE` / `Verdict: REQUEST_CHANGES`, case-insensitive; `REQUEST CHANGES` and `REQUEST_CHANGES` both occur). If there is no match, read more lines. If it still has none, do not guess: ask the reviewer for a complete list of its actionable findings, split into required and optional, plus the `Verdict:` line.
 
    The verdict is only the last line. Keep the numbered findings above it. Read the whole findings block, increasing `--lines` until its first finding is in view. If the block is cut off, read further up before acting on it.
 

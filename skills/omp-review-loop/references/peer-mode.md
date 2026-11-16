@@ -14,11 +14,10 @@ Use when the user names an existing agent by tab label (`architect`, `tester`, o
 ## Find the peer
 
 ```sh
-herdr tab list --workspace "$WS"    # find .tab_id where .label == "<label>"
-herdr pane list --workspace "$WS"   # panes whose .tab_id matches; pick the one running the agent
+PANE=$(bash <skill base directory>/scripts/find-agent-pane.sh <label>)
 ```
 
-Set `PANE=<pane_id>` and address the peer by pane ID with `herdr agent read/prompt "$PANE"`. Agent names are not workspace-scoped for your purposes: never address the peer by name.
+It resolves the label inside your workspace only and prints the pane id; it exits 1 when no tab matches, when several do, or when the tab has no agent — then stop and report. Address the peer by pane ID with `herdr agent read/prompt "$PANE"`. Agent names are not workspace-scoped for your purposes: never address the peer by name.
 
 State file: `$ROOT/.agents/omp-review-loop-<label>.json`, same schema, `reviewer` set to `<label>`.
 
@@ -28,7 +27,7 @@ State file: `$ROOT/.agents/omp-review-loop-<label>.json`, same schema, `reviewer
 2. Triage every finding per "Pushback" in `SKILL.md`: implement the ones you accept, push back on the ones you disagree with, at any severity.
 3. Run the repo's verification (`sh scripts/verify.sh` when the repo has it) after the fixes.
 4. Message the peer with `herdr agent prompt "$PANE" "<message>" --wait`: say what was fixed, what you disagree with and why, and ask for its verdict. On the first message, ask it to end with one line `Verdict: APPROVE` or `Verdict: REQUEST_CHANGES`.
-5. Read the reply. Extract the last `verdict: approve|request[ _]changes` match, case-insensitively. If the peer approves in prose without that line, ask it once for the explicit verdict line. If there is still none, report "no verdict" and stop.
+5. Read the reply. Extract the last `Verdict:` line of the peer's final block, case-insensitively, never from the echo of your own message (it contains both literal verdicts). If there is none, ask the peer for a complete list of its actionable findings, split into required and optional, plus the `Verdict:` line.
 6. Update the state file (`rounds`, `last_fingerprint`, `last_verdict`).
 7. `APPROVE`: apply any remaining findings you agreed with and report. `REQUEST_CHANGES`: go to step 1 with its new findings, until the round cap.
 
