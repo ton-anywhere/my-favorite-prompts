@@ -1,126 +1,168 @@
 # Atomic Git Commits: Small-Model Playbook
 
-Follow this playbook in order. Do not skip a step because the repository looks
-simple or because the requested Git operation appears harmless.
+Use this playbook when `SMALL_MODEL_PROFILE` is active or when choosing the patch
+helper. Use the file-reading tool to read it and the parent `SKILL.md` completely.
+Read any remaining ranges before issuing Git commands in a later tool call.
 
-## 1. Identify the Requested Operation
+## 0. Back Up Working Changes
 
-Classify the user's request before running commands:
+With `SMALL_MODEL_PROFILE` active, run this command once before the first Git
+mutation and again immediately before any authorized `git reset`. Replace
+`/absolute/skill` with this skill's absolute directory; run in the target repository:
 
-- **Inspect:** status, diff, log, show, or "what changed."
-- **Change repository state:** add, stage, restore, reset, stash, branch, checkout,
-  merge, rebase, or revert.
-- **Commit:** create or amend a commit.
-- **Remote:** fetch, pull, or push.
-
-Do only the requested class of operation. An inspection request does not authorize
-staging or committing. A request to edit files does not authorize a commit.
-
-## 2. Inspect Before Changing Anything
-
-Run `git status --short` first. Then inspect only the relevant changes with
-`git diff -- <path>` or `git diff --cached -- <path>`.
-
-From the output, separate:
-
-1. changes made for the current task;
-2. pre-existing or unrelated changes;
-3. untracked files whose ownership is uncertain.
-
-Preserve groups 2 and 3. Never clean, restore, reset, overwrite, or include them
-merely to make the working tree look tidy.
-
-## 3. Form Atomic Groups
-
-For every changed file, state the single purpose it serves. Put files in the same
-group only when they are required for one coherent behavior.
-
-Split groups when any of these are true:
-
-- the changes can be understood or reverted independently;
-- they affect independent skills, agents, or features;
-- the proposed subject needs "and" to join separate actions;
-- one file contains unrelated hunks.
-
-When a file contains mixed changes, use patch staging and select only the relevant
-hunks. If safe hunk selection is unclear, stop and ask the user instead of staging
-the whole file.
-
-For a multi-step task, show the proposed commit groups in execution order before
-staging.
-
-## 4. Respect Authorization Boundaries
-
-Read the user's latest message literally.
-
-- "Review," "inspect," or "show the diff" authorizes inspection only.
-- "Stage this" authorizes staging only.
-- "Commit this" authorizes one commit for the clearly identified change.
-- A commit does not authorize a push.
-- A push, pull, reset, rebase, merge, revert, stash, or branch switch must be
-  explicitly requested.
-
-If authorization is missing or ambiguous, explain the proposed operation and ask
-for approval. Never treat a general request to "finish" or "save changes" as
-permission for destructive operations or remote publication.
-
-## 5. Stage Precisely
-
-Stage explicit paths or selected hunks. Do not use broad staging commands such as
-`git add .` or `git add -A` when unrelated changes exist.
-
-After staging, run `git diff --cached --stat` and `git diff --cached`. Confirm:
-
-- every staged change belongs to the approved atomic group;
-- no unrelated file or hunk is staged;
-- the staged diff is complete enough to work on its own;
-- no secret, credential, generated artifact, or accidental debug output appears.
-
-If the staged diff is wrong, correct the index without discarding working-tree
-changes, then inspect it again.
-
-## 6. Write the Commit Message
-
-Use:
-
-```text
-<type>(<scope>): <imperative description>
+```sh
+python3 /absolute/skill/scripts/backup_work.py
 ```
 
-Choose the narrowest accurate type. Use `feat` or `fix` for behavior changes and
-`docs` only when behavior is unchanged. Keep the subject lowercase, imperative,
-specific, and no longer than 50 characters. Do not end it with punctuation.
+Proceed only after exit code 0 and `BACKUP_OK stash=HASH head=HASH`. Save the full
+hashes for recovery and the final report. `stash=none` means the tree was clean.
+The script stashes staged, unstaged, and untracked work, applies it back with
+`--index`, verifies restoration, and keeps the stash. Ignored files are excluded.
+Git content transformations are rejected before stashing to preserve file bytes.
+On failure, stop; preserve the reported stash and current state.
 
-Add a body only when the reason or tradeoff is not obvious from the subject and
-diff. Wrap body lines at 72 characters.
+After a successful hard reset, restore the saved work using Section 6. A backup
+does not authorize a reset or discarding unrelated work.
 
-Before committing, verify that the message describes the staged diff and only the
-staged diff.
+## 1. Inspect and Plan Once
 
-## 7. Commit Only When Authorized
+Run `git status --short`. Read the relevant tracked diffs and complete untracked
+files. If output is truncated, read the missing ranges before planning.
 
-Create exactly one approved commit at a time. Do not amend, create additional
-commits, or commit another atomic group without separate authorization.
+Assign every changed and untracked path to commit groups or an explicit
+exclusion. Group an implementation with its tests and instructions for the same
+behavior. Separate independent purposes. For mixed files, name the selected
+changes in each group. Commit an unchanged move before editing the moved file.
+Use the actual changes and the parent skill's message rules to decide groups and
+subjects. Repository history does not determine the message format or grouping.
 
-After the commit, inspect its result with `git status --short` and
-`git log -1 --oneline`. Report:
+Show a short plan in dependency order: **group → selected paths/changes → exact subject**.
+Once the groups are clear, proceed with the authorized sequence.
 
-- the short commit hash;
-- the exact subject;
-- any remaining changes, especially unrelated ones left untouched.
+- Inspection authorizes reads. Staging authorizes staging. Editing authorizes edits.
+- A commit request authorizes the identified commit. Approval for a sequence covers
+  its groups; continue without asking again for each group.
+- Push, pull, reset, rebase, merge, revert, stash, and branch switches require
+  authorization for that operation. Step 0's backup is included in an authorized
+  mutation. A commit request does not authorize a push.
 
-Do not push unless the user explicitly requested a push.
+Preserve unrelated working and staged changes. If ownership or safe separation is
+unclear, or unrelated work is already staged, preserve it and ask for the smallest
+needed decision. Check authorization against the whole conversation.
 
-## Stop Conditions
+## 2. Prepare One Group
 
-Stop and ask the user before continuing when:
+Run `mktemp -d /tmp/atomic-commits.XXXXXX` in its own tool call. Copy the returned
+absolute directory into later commands. Use literal absolute paths across tool
+calls; shell variables may not persist. Each group gets a new patch name, such as
+`01.patch`, then `02.patch`. Prepare each group after the previous commit.
 
-- ownership of a change is uncertain;
-- an unrelated change is already staged;
-- safe hunk separation is unclear;
-- the requested operation could discard or rewrite work;
-- commit or remote-operation authorization is missing;
-- command output conflicts with the expected repository state.
+Run the helper through `python3` with its absolute path under this skill directory.
+References are relative to the skill directory; the shell stays in the repository.
 
-When stopping, state the observed fact, the risk, and the smallest decision needed
-from the user. Do not guess.
+| Selected change | Prepare argument |
+|---|---|
+| All changes in a tracked or untracked working file | `--worktree REPO_PATH` |
+| Only some changes in a file | `--file REPO_PATH EXISTING_CONTENT_FILE` |
+| Delete a tracked file | `--delete REPO_PATH` |
+
+Repeat the arguments for all files in the group. `REPO_PATH` is relative to the
+repository root. For a mixed file, first create a temporary content file with only
+the selected changes applied to HEAD. `--file` **reads this existing input file**;
+it does not create it. Keep the working file intact. Whole files need no copies.
+
+Example: replace `/absolute/skill` with this skill's absolute directory and
+`/tmp/atomic-commits.EXAMPLE` with the directory returned by `mktemp`:
+
+```sh
+python3 /absolute/skill/scripts/commit_patch.py prepare /tmp/atomic-commits.EXAMPLE/01.patch --worktree bin/worktree --worktree README.md
+```
+
+For a mixed `settings.txt`, create the selected content at a temporary path first,
+then use `--file settings.txt /tmp/atomic-commits.EXAMPLE/selected-settings.txt`.
+
+## 3. Required Patch Workflow
+
+Use [the helper](../scripts/commit_patch.py) for every content commit and content
+amendment. After preparation, use this loop:
+
+1. Read the output. For review pages, read every diff line and
+   confirm it belongs to the group.
+2. Copy the helper's complete `Next:` command into **one new tool call**.
+3. Repeat until the helper offers `finalize`. Replace only its `--message` value
+   with the planned subject. Run it when the commit is authorized.
+
+The helper prints the command, patch path, checksum path, and next page number.
+Reuse them directly. The order is **prepare → review all pages → finalize**.
+`finalize` stages the saved patch, checks the complete staged tree against the
+reviewed patch, checks whitespace, commits, and checks the committed tree and
+message. It stops on the first error and preserves the resulting state for
+inspection. It does not print a second copy of the reviewed content.
+
+Run each command separately, with visible output and its original exit status.
+Read every review page before the next tool call. Keep errors visible too: run
+commands without pipelines, filters, or output redirection.
+
+Review checks:
+
+- Every file and hunk belongs to the group, with no unrelated content.
+- The change is complete enough to stand on its own.
+- No credential, generated artifact, or accidental debug output is included.
+- The subject describes exactly this group, follows Conventional Commits, uses a
+  lowercase imperative verb, and has at most 70 characters. Use no message body.
+
+Pages contain at most 80 lines or 8,000 bytes of diff content. The checksum is saved
+only after the last review page; `finalize` requires that complete paged review.
+Keep the patch, metadata, checksum, and page receipts until the sequence is done.
+Receipts track delivery, not comprehension: read the content before continuing.
+If a tool truncates output, read the missing content from the saved patch or saved
+staged diff before continuing. A statistic or checksum is not a content review.
+
+For content amendments, prepare only additional changes relative to current HEAD
+and add `--amend` to the printed finalize command. Previously committed files need
+no new inputs. A message-only amendment follows the parent skill.
+
+## 4. Recover from the Actual Error
+
+Read the error before choosing a fix. Correct its input or follow its printed
+command. For argument questions, run `prepare --help` before reading script source.
+
+| Observed error | Next action |
+|---|---|
+| `CONTENT_FILE` is missing | Use `--worktree` for the whole file, or create the selected input file first. Creating directories cannot supply missing content. |
+| An artifact already exists | Preserve it. Choose a fresh artifact name. |
+| Review is incomplete | Run the printed next page command. |
+| Finalize failed | Read the full error and inspect HEAD/index. Correct the cause. Retry the same command only if HEAD is unchanged and the index is still the base or reviewed tree. |
+| Patch, HEAD, or index changed | Inspect and preserve work. Prepare and review a new patch only after resolving the changed state. |
+
+The helper rejects stale state, changed patches, whitespace errors, and staged
+content outside the patch. Keep these checks; recover through the helper rather
+than direct staging or content commits. This profile uses saved checksums and
+paged review. Separate `stage`, `verify`, and `commit` commands remain available
+for callers that need staged-diff review; this profile uses `finalize`.
+
+**Non-content commits** (message-only `--amend`, `git mv` with unchanged content, reorder, config change already staged) have no working-tree delta, so `prepare` yields an empty patch and the helper is not used. Instead: `git add` the group, read the complete staged diff with `git diff --cached` (recover truncated output by reading every remaining range), confirm it contains exactly the group, then commit. Review still applies because the message or a moved path is the audited change.
+If a hook changes committed content, inspect that commit before an authorized
+repair. Stop for unexpected changes that the recovery steps above do not explain.
+
+## 5. Finish
+
+After each commit, inspect `git status --short` and `git log -1 --oneline`.
+Continue with the next authorized group. Report each short hash and exact subject,
+plus remaining changes. Push only when authorized.
+Report backup stash hashes. Leave all backup stashes for the human to clean up.
+
+## 6. Recovering from Failures
+
+Inspect HEAD, status, and `git stash show --stat STASH_HASH` before recovery.
+Preserve current work; do not apply a backup blindly over existing changes.
+Untracked files can survive a hard reset and prevent a full stash apply.
+When restoration is needed and safe, use the recorded hash:
+
+```sh
+git stash apply --index STASH_HASH
+```
+
+Verify restored status and diffs. On conflicts or errors, stop and report the
+stash hash and current state. Never use another hard reset to resolve recovery,
+automatically drop a backup stash, or claim recovery succeeded without checking.
