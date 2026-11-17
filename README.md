@@ -9,6 +9,7 @@ Personal AI workspace for prompts, agents, and skills.
 - `skills/` for local Codex skills
 - `agents-skills/` for generated links to local and third-party skills
 - `metaprompt/` for prompts that generate prompts
+- `docs/` for human guides: [`using-skills.md`](docs/using-skills.md) says which skill to run, and when
 - [`superpowers/`](https://github.com/obra/superpowers) for the upstream Superpowers checkout
 - [`lambdatest-agent-skills/`](https://github.com/LambdaTest/agent-skills) for the upstream LambdaTest agent skills checkout
 - [`impeccable/`](https://github.com/pbakaus/impeccable) for the upstream Impeccable checkout
