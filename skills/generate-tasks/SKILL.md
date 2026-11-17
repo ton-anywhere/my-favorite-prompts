@@ -2,6 +2,13 @@
 name: generate-tasks
 description: Use when the owner asks to generate a task list from requirements, a PRD, or a feature request (/generate-tasks <plan>).
 disable-model-invocation: true
+license: Apache-2.0 (see LICENSE)
+metadata:
+  author: Airton Ponce @ton-anywhere
+  source: https://github.com/snarktank/ai-dev-tasks/blob/main/generate-tasks.md
+  fork: https://github.com/ton-anywhere/ai-dev-tasks
+  original-author: Ryan Carson @snarktank
+  modified: Substantially rewritten by Airton Ponce from the Apache-2.0 original (INVEST validation, specificity rules, milestones, BLOCKED markers).
 ---
 
 # Rule: Generating a Task List from User Requirements
