@@ -9,15 +9,26 @@ Answer two questions, in order:
 1. **Is the scope clear?** Do you know the goal, the users, and what is in and out of scope? If not:
    - run `/brainstorming` by default: it settles what and why, then compares approaches and writes a spec;
    - run `/create-prd` instead for a new product or MVP whose tasks should cite numbered requirements (`FR 12`).
-2. **Is it more than one PR-sized task?** If not, just do it, or run `/task-breakdown` for a single task list. If it is, run OMP's `/plan`, approve the plan with **save** (not execute), then run `/task-breakdown` in the same session, which writes an epic.
+2. **How big is it?** Pick the row:
+
+   | Situation | Do |
+   |---|---|
+   | Trivial change | just do it |
+   | One task, scope clear | `/plan`, then approve with **execute** |
+   | One task, but long or reviewed task by task | `/plan` (approve with **save**), then `/task-breakdown` single list |
+   | Several mergeable tasks | `/plan` (approve with **save**), then `/task-breakdown` epic |
+
+   For one task, add `/task-breakdown` only when you need what it adds: a file in `tasks/` that outlives the session, `Verified` bullets recording what was checked, `Task N` headings for `subagent-driven-development`, or a split into an epic when the plan turns out bigger.
 
 ```mermaid
 flowchart TD
   A{"Scope clear?"} -->|"no, feature or change"| BR["/brainstorming"] --> B
   A -->|"no, new product needing numbered requirements"| PRD["/create-prd"] --> B
-  A -->|yes| B{"More than one PR-sized task?"}
-  B -->|no| S["do it, or /task-breakdown (single list)"]
-  B -->|yes| P["/plan, approve with save"] --> E["/task-breakdown (epic)"] --> X["execute each task: by hand or subagent-driven-development"]
+  A -->|yes| B{"How big?"}
+  B -->|trivial| D["just do it"]
+  B -->|"one task"| P1["/plan, approve with execute"]
+  B -->|"one long or reviewed task"| P2["/plan, approve with save"] --> S["/task-breakdown (single list)"] --> X
+  B -->|"several mergeable tasks"| P3["/plan, approve with save"] --> E["/task-breakdown (epic)"] --> X["execute each task: by hand or subagent-driven-development"]
 ```
 
 | Skill | Answers | Input | Output | Kind |
@@ -38,7 +49,8 @@ Notes:
 
 Examples:
 
-- Feature or change on an existing project, scope unclear: `/brainstorming`, then `/plan`, then `/task-breakdown`.
-- Feature with the scope settled in conversation: `/plan`, then `/task-breakdown`.
-- New product or MVP: `/create-prd`, then `/plan`, then `/task-breakdown`.
-- One small change: do it directly, or `/task-breakdown`.
+- Feature or change on an existing project, scope unclear: `/brainstorming`, then pick a row in the table above.
+- One task with the scope settled: `/plan`, then approve with execute.
+- Feature with several mergeable tasks: `/plan` (save), then `/task-breakdown`.
+- New product or MVP: `/create-prd`, then `/plan` (save), then `/task-breakdown`.
+- Trivial change: do it directly.
