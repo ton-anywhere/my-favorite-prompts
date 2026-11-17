@@ -6,6 +6,8 @@ steipete-agent-scripts/
 mattpocock-skills/
 impeccable/
 awesome-design-md/
+__pycache__/
+**/__pycache__/
 
 # Claude Code managed-skills sync cache; ~/.claude/skills is a symlink to skills/,
 # so the sync writes <org>_<account> buckets back into the repo.
