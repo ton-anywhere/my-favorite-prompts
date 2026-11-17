@@ -27,6 +27,9 @@ Think step-by-step thoroughly before outputting anything.
 To guide an AI assistant in creating a detailed, step-by-step task list in Markdown format based on user requirements, feature requests, or existing documentation. The task list should guide a developer through implementation.
 
 ## Output
+**If the input is an existing implementation plan, or the work is an epic of tasks to pick up separately:** use the `epic-task-breakdown` skill instead of this rule. Its layout is `tasks/<epic>/README.md` plus one file per task, with no task 0.0 and no "Go" pause, because the plan already settled the parent tasks.
+
+Otherwise:
 - **Format:** Markdown (`.md`)
 - **Location:** `/tasks/`
 - **Filename:** `tasks-[feature-name].md` (e.g., `tasks-user-profile-editing.md`)
