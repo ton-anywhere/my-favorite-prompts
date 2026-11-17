@@ -60,7 +60,7 @@ Count the **independently mergeable tasks**: pieces that each leave `main` worki
 
 6. **Phase 2: Generate Sub-Tasks:** Once the user confirms, read [sub-tasks.md](sub-tasks.md). Break down each task into smaller, actionable sub-tasks necessary to complete it. Ensure sub-tasks logically follow from the task and cover the implementation details implied by the requirements. Write them as the shape's Phase 2 describes.
 
-7. **Identify Relevant Files:** Based on the tasks and requirements, identify the files that will need to be created or modified. List these under `Relevant Files`, including corresponding test files.
+7. **Identify Interfaces and Relevant Files:** For each task, write its Interfaces block: what it consumes from earlier tasks and what it produces for later ones, with exact names and types. Then identify the files that will need to be created or modified and list them under `Relevant Files`, including corresponding test files.
 
 8. **Self-Review:** Run the [Self-Review Step](#self-review-step-mandatory) and fix what fails.
 
@@ -73,6 +73,7 @@ After completing the full task list:
 - Verify every task follows the INVEST checklist ([invest.md](invest.md)).
 - Ensure milestones (single list) or the Delivers column (epic) are realistic and provide working, testable states.
 - Check that no tasks are vague or require the developer to do extra research.
+- Check interface consistency: every name a task Consumes matches, exactly, what an earlier task Produces (`clearLayers()` in one task and `clearFullLayers()` in another is a bug).
 - Check that no fact is written twice: in an epic, task files link to the README instead of copying it.
 
 End the report with: `Self-review: <N> tasks and <M> sub-tasks checked; fixed: <list, or none>; blocked: <ids, or none>`.
@@ -99,7 +100,7 @@ The process explicitly requires a pause after Phase 1 — the parent tasks and m
 | Skipping the self-review line | End the report with it |
 | An epic as one file with only parent tasks | README plus one file per task, full sub-tasks |
 | Plan kept next to the README | Fold its decisions into the README, delete it |
-| Constraints or steps repeated in task files | Link to the README |
+| Global constraints or steps repeated in task files | Link to the README |
 | One epic branch by default | A branch per task |
 | Checking a sub-task without a `Verified` bullet | Record what was run and observed |
 | Rewriting a completed task after a change | Add a dated note under it |

@@ -14,7 +14,9 @@ Write the complete `README.md` (template below). Its Tasks table names each task
 
 ## Phase 2
 
-Write one task file per README row (template below), with Relevant Files in each. README content is linked from task files, never copied.
+Write one task file per README row (template below), with Interfaces and Relevant Files in each. README content is linked from task files, never copied.
+
+Each task file is a valid plan for `subagent-driven-development`: its `# Task NN — [Name]` heading lets `task-brief <task file> NN` extract it (pass the id as written, `01` not `1`), its Interfaces block carries what neighbouring tasks use, and the reviewer copies the README's Global Constraints.
 
 ## Branches
 
@@ -37,7 +39,7 @@ Write one task file per README row (template below), with Relevant Files in each
 - **[Decision].** [Reason.]
 - **Out of scope:** [...]
 
-## Constraints
+## Global Constraints
 
 - [Project-wide rules every task obeys.]
 
@@ -64,9 +66,13 @@ Review Focus lists up to five such inputs; each names the task whose test pins i
 ```markdown
 # Task NN — [Name]
 
-**Epic:** [README](README.md) (decisions, constraints; Review Focus N is tested here)
+**Epic:** [README](README.md) (decisions, global constraints; Review Focus N is tested here)
 
 **Outcome:** [What the owner observes when the task is done.]
+
+**Interfaces:**
+- Consumes: [exact signatures this task uses from earlier tasks, or "nothing"]
+- Produces: [exact names, parameters, and return types later tasks rely on]
 
 ## Background
 
