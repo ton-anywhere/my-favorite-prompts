@@ -8,6 +8,7 @@ IMPECCABLE_DIR="$ROOT/impeccable"
 STEIPETE_AGENT_SCRIPTS_DIR="$ROOT/steipete-agent-scripts"
 MATTPOCOCK_SKILLS_DIR="$ROOT/mattpocock-skills"
 PONYTAIL_DIR="$ROOT/ponytail"
+INFERENCE_OPTIMISATION_SKILL_DIR="$ROOT/inference-optimisation-skill"
 SKILLS_DIR="$ROOT/skills"
 AGENTS_SKILLS_DIR="$ROOT/agents-skills"
 AGENTS_SKILLS="$HOME/.agents/skills"
@@ -67,6 +68,12 @@ else
   git clone https://github.com/mattpocock/skills.git "$MATTPOCOCK_SKILLS_DIR"
 fi
 
+if [[ -d "$INFERENCE_OPTIMISATION_SKILL_DIR/.git" ]]; then
+  git -C "$INFERENCE_OPTIMISATION_SKILL_DIR" pull --ff-only origin main
+else
+  git clone https://github.com/sybil-solutions/inference-optimisation-skill.git "$INFERENCE_OPTIMISATION_SKILL_DIR"
+fi
+
 if [[ -d "$PONYTAIL_DIR/.git" ]]; then
   git -C "$PONYTAIL_DIR" fetch --prune origin
 else
@@ -84,6 +91,7 @@ bash "$ROOT/flatten_superpowers.sh"
 # Link selected third-party skills into the generated directory.
 ln -sfn "../lambdatest-agent-skills/rspec-skill" "$AGENTS_SKILLS_DIR/rspec-skill"
 ln -sfn "$IMPECCABLE_DIR/.agents/skills/impeccable" "$AGENTS_SKILLS_DIR/impeccable"
+ln -sfn "../inference-optimisation-skill/skills/inference-optimisation" "$AGENTS_SKILLS_DIR/inference-optimisation"
 
 for name in "${MATTPOCOCK_ENGINEERING_SKILLS[@]}"; do
   ln -sfn "$MATTPOCOCK_SKILLS_DIR/skills/engineering/$name" "$AGENTS_SKILLS_DIR/$name"

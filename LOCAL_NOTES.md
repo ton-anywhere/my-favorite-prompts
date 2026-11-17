@@ -80,3 +80,25 @@ git -C ponytail rebase origin/main
 Never run `omp plugin upgrade @dietrichgebert/ponytail`: a linked plugin has
 nothing to upgrade from, and reinstalling it from GitHub would replace the
 patched tree with the published package.
+
+## Inference optimisation checkout
+
+`inference-optimisation-skill/` is an unpatched upstream checkout of
+[sybil-solutions/inference-optimisation-skill](https://github.com/sybil-solutions/inference-optimisation-skill),
+the `inference-optimisation` skill. `bootstrap.sh` clones or fast-forwards it
+and links `skills/inference-optimisation` into `agents-skills/`.
+
+No personal changes: stay on `main` and update with:
+
+```bash
+git -C inference-optimisation-skill pull --ff-only origin main
+```
+
+A local edit makes that pull fail; if one is ever needed, move the checkout to
+the `local-custom` pattern above and switch the bootstrap block to
+`fetch --prune origin`.
+
+Runtime: the harness is standard-library Python plus bash. `scripts/mem.sh`
+reads a container's real footprint through `docker top`, `docker inspect` and
+`/proc/<pid>/fdinfo`, so the container memory watchdog needs Docker and
+passwordless sudo for cross-user fdinfo; the existing-server path needs neither.
