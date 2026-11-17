@@ -8,100 +8,96 @@ metadata:
   source: https://github.com/snarktank/ai-dev-tasks/blob/main/generate-tasks.md
   fork: https://github.com/ton-anywhere/ai-dev-tasks
   original-author: Ryan Carson @snarktank
-  modified: Merged by Airton Ponce from his rewrite of the Apache-2.0 generate-tasks.md (INVEST validation, specificity rules, BLOCKED markers) and his epic-task-breakdown skill (epic layout, per-task branches, tracking conventions).
+  modified: Merged by Airton Ponce from his rewrite of the Apache-2.0 generate-tasks.md (INVEST validation, specificity rules, milestones, BLOCKED markers) and his epic-task-breakdown skill (epic layout, per-task branches, tracking conventions).
 ---
 
-# Task Breakdown
+# Rule: Breaking Work into Tasks
 
-Turns a plan, PRD, or requirements into tasks a developer can pick up without asking anything. Every fact lives in exactly one document.
+## Core Instructions
 
-## Choose the shape
+**Mandatory Thinking Process:**
+Think step-by-step thoroughly before outputting anything.
+1. Deeply analyze the provided plan, PRD, or requirements and the existing codebase.
+2. Apply every section of this document, and of the files it sends you to, in exact sequence.
+3. Perform full INVEST validation on every task.
+4. Only then generate output.
+
+## Goal
+
+To guide an AI assistant in creating a detailed, step-by-step task list in Markdown format based on an implementation plan, a PRD, user requirements, or feature requests. The task list should guide a developer who has not seen this codebase through implementation without additional research.
+
+## Files
+
+Read these before the step that needs them:
+
+| File | Read for |
+|---|---|
+| [invest.md](invest.md) | Task Breakdown Principles and INVEST Validation, applied to every task |
+| [sub-tasks.md](sub-tasks.md) | Sub-Task Specificity Rules |
+| [single-list.md](single-list.md) | The single-list shape: its two phases and template |
+| [epic.md](epic.md) | The epic shape: its two phases, branches, and templates |
+
+## Output Shape
 
 Count the **independently mergeable tasks**: pieces that each leave `main` working when merged alone.
 
-| Count | Shape |
-|---|---|
-| 1 | **Single list:** `tasks/tasks-<feature>.md`, one branch |
-| 2 or more | **Epic:** `tasks/<epic>/README.md` plus one `NN-<slug>.md` per task, one branch per task |
+| Count | Shape | Read |
+|---|---|---|
+| 1 | **Single list**: `tasks/tasks-[feature-name].md` | [single-list.md](single-list.md) |
+| 2 or more | **Epic**: `tasks/[epic-name]/README.md` plus one `NN-[slug].md` per task | [epic.md](epic.md) |
 
 ## Process
 
-1. **Read the input and the code.** Find the existing modules, conventions, and tests the work touches. With a plan as input, its decisions stand; with a PRD or requirements, you make them here.
-2. **Draft the task table** (columns below) and show it to the owner with: "Ready to write the sub-tasks? Reply 'Go'." Stop until the owner answers. The split into tasks is the expensive decision to redo, so it is approved before any detail is written.
-3. **Write the files** in the shape chosen above.
-4. **Self-review, then report.** Check every sub-task against [Sub-task rules](#sub-task-rules) and fix what fails: an unnamed file ("the config test file") or a Verify without an expected output is a failure. The final message must contain:
-   - the paths written;
-   - `Self-review: <N> sub-tasks checked; fixed: <list, or none>; blocked: <ids, or none>`.
+1. **Receive Input:** The user provides an implementation plan (for example from `writing-plans`), a PRD (for example `tasks/prd-[feature].md`), a feature request, or a task description.
 
-## Epic layout
+2. **Analyze Requirements:** Analyze the functional requirements, user needs, and implementation scope from the provided information. With a plan as input, its decisions stand; with a PRD or requirements, you make them here.
 
-```
-tasks/<epic>/
-├── README.md          why and what — no implementation steps
-└── NN-<slug>.md       how — one file per task, the only place with sub-task checkboxes
-```
+3. **Assess Current State:** Review the existing codebase to understand existing infrastructure, architectural patterns and conventions. Also, identify any existing components or features that already exist and could be relevant to the requirements. Then, identify existing related files, components, and utilities that can be leveraged or need modification.
 
-A plan given as input is folded into the README and deleted; the epic has no third document.
+4. **Phase 1: Generate Tasks:** Read [invest.md](invest.md). Generate the main, high-level tasks required to implement the feature, following its Task Breakdown Principles, and run its INVEST Validation on every task. Choose the [Output Shape](#output-shape), read that shape's file, and write its Phase 1 output.
 
-**README.md**, in this order:
+5. **Wait for Confirmation:** Present the Phase 1 output to the user and say: "I have generated the high-level tasks based on your requirements. Ready to generate the sub-tasks? Respond with 'Go' to proceed." Then stop and wait for the user to respond with "Go". If a task seems too large (e.g., "Implement AI and UI"), suggest splitting it here.
 
-1. **Goal**: one or two sentences.
-2. **Source of truth**: one line naming what wins when a doc disagrees with this epic (for example the README's decisions, `docs/`, a PRD, a glossary).
-3. **Decisions**: each with its reason, plus an *Out of scope* line.
-4. **Constraints**: project-wide rules every task obeys.
-5. **Tasks**: one table, then one paragraph on order and merging. The table replaces milestone tables and dependency diagrams.
+6. **Phase 2: Generate Sub-Tasks:** Once the user confirms, read [sub-tasks.md](sub-tasks.md). Break down each task into smaller, actionable sub-tasks necessary to complete it. Ensure sub-tasks logically follow from the task and cover the implementation details implied by the requirements. Write them as the shape's Phase 2 describes.
 
-   | Done | Task | Branch | Delivers | Needs |
-   |------|------|--------|----------|-------|
-   | [ ] | [01 Name](01-slug.md) | `feature/<epic>-01-slug` | observable result | — or task numbers |
+7. **Identify Relevant Files:** Based on the tasks and requirements, identify the files that will need to be created or modified. List these under `Relevant Files`, including corresponding test files.
 
-6. **Review Focus**: up to five inputs no happy-path test hits, each with the expected behavior and `→ task NN`, the task whose test pins it.
+8. **Self-Review:** Run the [Self-Review Step](#self-review-step-mandatory) and fix what fails.
 
-**NN-<slug>.md**, in this order:
+9. **Save and Report:** Save the files and report the paths written plus the self-review line.
 
-1. Title and one header line: `**Epic:** [README](README.md) (decisions, constraints; Review Focus N is tested here)`. README content is linked, never copied.
-2. **Outcome**: what the owner observes when the task is done.
-3. **Background**: only facts the implementer cannot find quickly (file:line, library behavior). A task that ingests external data names the source URL, format, fields, and expected volume here.
-4. **Sub-tasks**: numbered `N.M` checkboxes, test first (see [Sub-task rules](#sub-task-rules)).
-5. **Relevant Files**, then **Notes**.
+## Self-Review Step (Mandatory)
 
-## Single-list layout
+After completing the full task list:
+- Confirm all specificity rules ([sub-tasks.md](sub-tasks.md)) are met by every sub-task.
+- Verify every task follows the INVEST checklist ([invest.md](invest.md)).
+- Ensure milestones (single list) or the Delivers column (epic) are realistic and provide working, testable states.
+- Check that no tasks are vague or require the developer to do extra research.
+- Check that no fact is written twice: in an epic, task files link to the README instead of copying it.
 
-`tasks/tasks-<feature>.md`, in this order: **Goal**, **Source of truth**, **Constraints**, **Sub-tasks** (numbered `1.M`), **Relevant Files**, **Notes**. The branch is named once, under Goal.
+End the report with: `Self-review: <N> tasks and <M> sub-tasks checked; fixed: <list, or none>; blocked: <ids, or none>`.
 
-## Sub-task rules
-
-Each sub-task:
-
-- names the exact files, function signatures (with return types when not obvious), values, and test names it needs; a database change names every column with type, nullability, and index;
-- ends with `_Verify:_` giving a command and the output that means it passed;
-- passes INVEST: **I**ndependent of unfinished sub-tasks (else reorder or split), **N**egotiable (states the outcome, not a mechanism the code could choose), **V**aluable on its own, **E**stimable, **S**mall enough for one focused session, **T**estable through its Verify;
-- is marked `⚠️ BLOCKED: <what must be known>` when it depends on information nobody has yet.
-
-When splitting work into tasks: deliver the simplest version that works end to end first, and make each upgrade its own task; split a pipeline into independently testable stages; put core logic before UI.
-
-## Branches
-
-- Each epic task gets its own branch, cut from `main` and merged alone; the owner usually creates it by hand.
-- Use one shared branch only when tasks would break `main` unless merged together, and say why in the README.
-- A task that changes no code (an operation, a hand-run migration) has no branch: `none (no code)`.
-- A branch name appears once: the README table (epic) or under Goal (single list).
-
-## Tracking and history
+## Tracking and History
 
 - When a sub-task is done, check it and add a bullet under it: `Verified <YYYY-MM-DD>: <what was run and observed>`. In an epic, check the task's README row when its file is complete. Nothing else carries status.
 - A completed task is history. A later change is a dated bullet under it (`Changed <date>:`, `Superseded by NN.M:`, `Decided:`), never an edit to its text.
 
-## Planning writes only task files
+## Planning Writes Only Task Files
 
 While planning, write only under `tasks/`. A value the owner supplies ("my window is 204800", "ok add it") goes into the task documents, not into live config, state, or code. Live changes happen only when the owner says to execute a task.
 
-## Common mistakes
+## Interaction Model
+
+The process explicitly requires a pause after Phase 1 — the parent tasks and milestones of a single list, or the README of an epic — to get user confirmation ("Go") before generating the detailed sub-tasks. This ensures the high-level plan aligns with user expectations before diving into details.
+
+## Common Mistakes
 
 | Mistake | Fix |
 |---|---|
-| Writing sub-tasks before the owner approves the task table | Show the table, wait for "Go" |
-| An epic as one file with only parent tasks | One file per task, full sub-tasks |
+| Writing sub-tasks or task files before the owner says "Go" | Stop after Phase 1 |
+| Running INVEST on sub-tasks only | INVEST applies to every task |
+| Skipping the self-review line | End the report with it |
+| An epic as one file with only parent tasks | README plus one file per task, full sub-tasks |
 | Plan kept next to the README | Fold its decisions into the README, delete it |
 | Constraints or steps repeated in task files | Link to the README |
 | One epic branch by default | A branch per task |
