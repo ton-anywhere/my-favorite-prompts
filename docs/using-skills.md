@@ -15,7 +15,7 @@ Answer two questions, in order:
    |---|---|
    | Trivial change | just do it |
    | One task, scope clear | `/plan`, then approve with **execute** |
-   | One task, but long or reviewed task by task | `/plan` (approve with **save**), then `/task-breakdown` single list |
+   | One task that spans sessions or needs a review per step | `/plan` (approve with **save**), then `/task-breakdown` single list |
    | Several mergeable tasks | `/plan` (approve with **save**), then `/task-breakdown` epic |
 
    For one task, add `/task-breakdown` only when you need what it adds: a file in `tasks/` that outlives the session, `Verified` bullets recording what was checked, `Task N` headings for `subagent-driven-development`, or a split into an epic when the plan turns out bigger.
@@ -27,7 +27,7 @@ flowchart TD
   A -->|yes| B{"How big?"}
   B -->|trivial| D["just do it"]
   B -->|"one task"| P1["/plan, approve with execute"]
-  B -->|"one long or reviewed task"| P2["/plan, approve with save"] --> S["/task-breakdown (single list)"] --> X
+  B -->|"one task, multi-session or reviewed per step"| P2["/plan, approve with save"] --> S["/task-breakdown (single list)"] --> X
   B -->|"several mergeable tasks"| P3["/plan, approve with save"] --> E["/task-breakdown (epic)"] --> X["execute each task: by hand or subagent-driven-development"]
 ```
 
