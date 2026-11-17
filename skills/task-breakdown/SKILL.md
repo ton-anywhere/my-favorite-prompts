@@ -44,7 +44,7 @@ Count the **independently mergeable tasks**: pieces that each leave `main` worki
 | Count | Shape | Read |
 |---|---|---|
 | 1 | **Single list**: `tasks/tasks-[feature-name].md` | [single-list.md](single-list.md) |
-| 2 or more | **Epic**: `tasks/[epic-name]/README.md` plus one `NN-[slug].md` per task | [epic.md](epic.md) |
+| 2 or more | **Epic**: `tasks/[epic-name]/README.md` plus one `[slug].md` per task, unnumbered | [epic.md](epic.md) |
 
 ## Process
 
@@ -81,7 +81,7 @@ End the report with: `Self-review: <N> tasks and <M> sub-tasks checked; fixed: <
 ## Tracking and History
 
 - When a sub-task is done, check it and add a bullet under it: `Verified <YYYY-MM-DD>: <what was run and observed>`. In an epic, check the task's README row when its file is complete. Nothing else carries status.
-- A completed task is history. A later change is a dated bullet under it (`Changed <date>:`, `Superseded by NN.M:`, `Decided:`), never an edit to its text.
+- A completed task is history. A later change is a dated bullet under it (`Changed <date>:`, `Superseded by <task or sub-task>:`, `Decided:`), never an edit to its text.
 
 ## Planning Writes Only Task Files
 

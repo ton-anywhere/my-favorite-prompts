@@ -5,7 +5,7 @@ For work with two or more independently mergeable tasks. Exactly two kinds of do
 ```
 tasks/[epic-name]/
 ├── README.md          why and what — no implementation steps
-└── NN-[slug].md       how — one file per task, the only place with sub-task checkboxes
+└── [slug].md         how — one file per task, the only place with sub-task checkboxes
 ```
 
 ## Phase 1
@@ -16,7 +16,9 @@ Write the complete `README.md` (template below). Its Tasks table names each task
 
 Write one task file per README row (template below), with Interfaces and Relevant Files in each. README content is linked from task files, never copied.
 
-Each task file is a valid plan for `subagent-driven-development`: its `# Task NN — [Name]` heading lets `task-brief <task file> NN` extract it (pass the id as written, `01` not `1`), its Interfaces block carries what neighbouring tasks use, and the reviewer copies the README's Global Constraints.
+Epic tasks have no numbers: the README table order is the work order, files are named by slug, sub-tasks are unnumbered checkboxes, and other tasks are referred to by name. Reordering or inserting a task changes only the table.
+
+Each task file is a valid plan for `subagent-driven-development`: every file has the same fixed heading `# Task 1: [Name]` (one task per file, so the `1` never changes), which lets `task-brief <slug>.md 1` extract it; its Interfaces block carries what neighbouring tasks use; and the reviewer copies the README's Global Constraints.
 
 ## Branches
 
@@ -49,14 +51,14 @@ Check a sub-task in its task file when done, and the task here when its file is 
 
 | Done | Task | Branch | Delivers | Needs |
 |------|------|--------|----------|-------|
-| [ ] | [01 Name](01-slug.md) | `feature/[epic]-01-slug` | [working state after this task] | — |
-| [ ] | [02 Name](02-slug.md) | none (no code) | [...] | 01 |
+| [ ] | [Name](slug.md) | `feature/[epic]-[slug]` | [working state after this task] | — |
+| [ ] | [Other name](other-slug.md) | none (no code) | [...] | Name |
 
 [One paragraph on order and merging.]
 
 ## Review Focus
 
-1. **[Input or failure mode no happy-path test hits]**: [expected behavior]. → task NN
+1. **[Input or failure mode no happy-path test hits]**: [expected behavior]. → [task name]
 ```
 
 Review Focus lists up to five such inputs; each names the task whose test pins it.
@@ -64,7 +66,7 @@ Review Focus lists up to five such inputs; each names the task whose test pins i
 ## Task file template
 
 ```markdown
-# Task NN — [Name]
+# Task 1: [Name]
 
 **Epic:** [README](README.md) (decisions, global constraints; Review Focus N is tested here)
 
@@ -80,9 +82,9 @@ Review Focus lists up to five such inputs; each names the task whose test pins i
 
 ## Sub-tasks
 
-- [ ] N.1 [Failing test: file, test names, assertions.]
+- [ ] **[Failing test]**: file, test names, assertions.
   - _Verify:_ [command] → [expected failure]
-- [ ] N.2 [Implementation: file, signature, values.]
+- [ ] **[Implementation]**: file, signature, values.
   - _Verify:_ [command] → [expected output]
 
 ## Relevant Files
