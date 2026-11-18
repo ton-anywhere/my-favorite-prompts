@@ -37,7 +37,8 @@ flowchart TD
 | `create-prd` | What and why: user stories, numbered functional requirements, success metrics, deferred items | an idea | `tasks/prd-<feature>.md` | command |
 | `/plan` | How, as decisions: approach, critical files, verification; explored read-only, enforced by OMP | a request, spec, or PRD | `local://<slug>-plan.md` (session-local) | OMP built-in mode |
 | `task-breakdown` | In what pieces: a single list for one mergeable task, an epic (one file and branch per task) for more; each task with interfaces, tests, and verify steps | a plan, a spec, a PRD, or requirements | `tasks/tasks-<feature>.md` or `tasks/<epic>/` | command |
-| `executing-plans`, `subagent-driven-development` | Build it | a task list or an epic task file | code | upstream (superpowers) |
+| `executing-plans` | Build it inline, one final review of the branch | a task list or an epic task file | code | command, upstream (superpowers) |
+| `subagent-driven-development` | Build it, one reviewed task at a time | a task list or an epic task file | code | command, upstream (superpowers) |
 
 Notes:
 
@@ -46,6 +47,7 @@ Notes:
 - `brainstorming` ends by asking you to run `/plan` on the approved spec (patched on the `local-custom` branch of `superpowers/`; upstream invokes `writing-plans`). `writing-plans` is no longer part of this flow: `task-breakdown` writes the per-task interfaces, tests, and verify steps it would add.
 - `/plan` keeps its plan only in the session (`local://`). Run `/task-breakdown` before the session ends; it folds the plan into the epic README.
 - `subagent-driven-development` runs on `task-breakdown` output directly: pass an epic task file (`task-brief 01-slug.md 01`) or a single list (`task-brief tasks-x.md 1`).
+- Executing with subagents: `orchestrate` (OMP magic keyword) or `subagent-driven-development`. `orchestrate` is a prompt contract only: it accepts any request or plan, runs independent slices in parallel, and has no per-task review or ledger. `subagent-driven-development` runs tasks one at a time, each with a fresh implementer and a spec-and-quality review, keeps a ledger that survives compaction, and needs `task-breakdown` output. Rule of thumb: `orchestrate` for a plan you trust, low-risk tasks, or independent tasks you want in parallel; `subagent-driven-development` for work spanning sessions or tasks risky enough to need a review gate (security, concurrency, path handling).
 
 Examples:
 
