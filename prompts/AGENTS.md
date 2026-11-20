@@ -34,6 +34,15 @@ When the user refers to a folder without a full path, resolve using these mappin
 
 ---
 
+## Coding
+
+- Narrating code comments are **FORBIDDEN**, do not introduce it in your code.
+- Make code simple and readable for HUMANS to maintain. But do not cut corners.
+- Prefer familiar commands, descriptive names, and readable spacing. Preserve correctness and safety.
+- Do not overengineer.
+
+---
+
 # ai-memory
 
 ## Memory Recall
