@@ -1,6 +1,6 @@
 ---
 name: task-breakdown
-description: Use when the owner asks to break a plan, PRD, or requirements into tasks under tasks/ — a single task list for one small change or an epic folder with one file and branch per task — or to update, check off, or record results in an existing task list or epic (/task-breakdown <plan or requirements>).
+description: Use when the owner asks to break a plan, PRD, or requirements into tasks — a single task file for one user story or an epic folder with one task file and branch per story — or to update, check off, or record results in an existing task file or epic (/task-breakdown <plan or requirements>).
 disable-model-invocation: true
 license: Apache-2.0 (see LICENSE)
 metadata:
@@ -8,100 +8,107 @@ metadata:
   source: https://github.com/snarktank/ai-dev-tasks/blob/main/generate-tasks.md
   fork: https://github.com/ton-anywhere/ai-dev-tasks
   original-author: Ryan Carson @snarktank
-  modified: Merged by Airton Ponce from his rewrite of the Apache-2.0 generate-tasks.md (INVEST validation, specificity rules, milestones, BLOCKED markers) and his epic-task-breakdown skill (epic layout, per-task branches, tracking conventions).
+  modified: Merged by Airton Ponce from his rewrite of the Apache-2.0 generate-tasks.md (INVEST validation, specificity rules, BLOCKED markers) and his epic-task-breakdown skill (epic layout, per-task branches, tracking conventions).
 ---
 
 # Rule: Breaking Work into Tasks
 
-## Core Instructions
-
-**Mandatory Thinking Process:**
-Think step-by-step thoroughly before outputting anything.
-1. Deeply analyze the provided plan, PRD, or requirements and the existing codebase.
-2. Apply every section of this document, and of the files it sends you to, in exact sequence.
-3. Perform full INVEST validation on every task.
-4. Only then generate output.
-
 ## Goal
 
-To guide an AI assistant in creating a detailed, step-by-step task list in Markdown format based on an implementation plan, a PRD, user requirements, or feature requests. The task list should guide a developer who has not seen this codebase through implementation without additional research.
+Turn an implementation plan, a PRD, or requirements into task files. Each task file tells a developer, or a developer agent, **what** to deliver and how to prove it is done. **How** to build it is the developer's decision.
 
 ## Files
 
-Read these before the step that needs them:
+Read each file before the step that needs it:
 
 | File | Read for |
 |---|---|
-| [invest.md](invest.md) | Task Breakdown Principles and INVEST Validation, applied to every task |
-| [sub-tasks.md](sub-tasks.md) | Sub-Task Specificity Rules |
-| [single-list.md](single-list.md) | The single-list shape: its two phases and template |
-| [epic.md](epic.md) | The epic shape: its two phases, branches, and templates |
+| [invest.md](invest.md) | What counts as a task (its own user story), breakdown principles, INVEST validation |
+| [task-template.md](task-template.md) | The one task template, used for a single task and for every epic task |
+| [sub-tasks.md](sub-tasks.md) | What a sub-task contains, and the final Verification sub-task |
+| [epic.md](epic.md) | The epic README, branches, and the epic's two phases |
 
 ## Output Shape
 
-Count the **independently mergeable tasks**: pieces that each leave `main` working when merged alone.
+Count the **tasks**: the pieces that each have a user story of their own ([invest.md](invest.md)). Pieces without a user story are sub-tasks, not tasks.
 
-| Count | Shape | Read |
-|---|---|---|
-| 1 | **Single list**: `tasks/tasks-[feature-name].md` | [single-list.md](single-list.md) |
-| 2 or more | **Epic**: `tasks/[epic-name]/README.md` plus one `[slug].md` per task, unnumbered | [epic.md](epic.md) |
+| Tasks | Shape |
+|---|---|
+| 1 | **Single task**: one file, `<tasks dir>/tasks-[feature-name].md`, in [task-template.md](task-template.md) format without the Epic line |
+| 2 or more | **Epic**: `<tasks dir>/[epic-name]/README.md` plus one `[slug].md` per task, in the same template with the Epic line ([epic.md](epic.md)) |
+
+`<tasks dir>` is where the project keeps agent-produced plans and tasks: the folder its rules name (for example `.agents/tasks/`) or the one where the input plan already lives. Use `tasks/` only when the project has no such convention.
+
+A single task has no Goal, Milestones, Global Constraints, or numbered parent tasks. Its project-wide constraints and branch go under **Notes**.
 
 ## Process
 
-1. **Receive Input:** The user provides an implementation plan (for example from `writing-plans`), a PRD (for example `tasks/prd-[feature].md`), a feature request, or a task description.
+1. **Receive input:** an implementation plan, a PRD, a feature request, or a task description. With a plan as input, its decisions stand; with a PRD or requirements, you make them here.
+2. **Assess the current state:** read the code the work touches, and the existing patterns, components and utilities it can reuse.
+3. **Phase 1: tasks without sub-tasks.** Read [invest.md](invest.md), write each task's user story, and run INVEST on every task. Choose the [output shape](#output-shape), then write the files with every section of [task-template.md](task-template.md) except **Sub-tasks** (plus the README, for an epic).
+4. **Rundown, then stop.** Send a [rundown](#rundown) as a plain chat message and end your turn. Write no sub-tasks until the owner approves in their next message. When the owner corrects something, apply it, send a new rundown, and stop again.
+5. **Phase 2: sub-tasks.** After approval, read [sub-tasks.md](sub-tasks.md) and add the **Sub-tasks** section to each task file, ending each with its **Verification** sub-task.
+6. **Self-review**, then a [rundown](#rundown) of Phase 2 with the self-review line, and stop.
 
-2. **Analyze Requirements:** Analyze the functional requirements, user needs, and implementation scope from the provided information. With a plan as input, its decisions stand; with a PRD or requirements, you make them here.
+## Rundown
 
-3. **Assess Current State:** Review the existing codebase to understand existing infrastructure, architectural patterns and conventions. Also, identify any existing components or features that already exist and could be relevant to the requirements. Then, identify existing related files, components, and utilities that can be leveraged or need modification.
+After each phase, give a brief summary of what you wrote, as a plain message: a few bullets, or a short table for an epic.
 
-4. **Phase 1: Generate Tasks:** Read [invest.md](invest.md). Generate the main, high-level tasks required to implement the feature, following its Task Breakdown Principles, and run its INVEST Validation on every task. Choose the [Output Shape](#output-shape), read that shape's file, and write its Phase 1 output.
+- the shape (single task or epic) and the path of every file written;
+- each task's name and its user story in one line;
+- in Phase 2, the sub-task count per task and what the Verification sub-task proves;
+- any open question the owner must answer.
 
-5. **Wait for Confirmation:** Present the Phase 1 output to the user and say: "I have generated the high-level tasks based on your requirements. Ready to generate the sub-tasks? Respond with 'Go' to proceed." Then stop and wait for the user to respond with "Go". If a task seems too large (e.g., "Implement AI and UI"), suggest splitting it here.
+Then end your turn. The rundown never uses the `ask` tool or a form, and never asks for a fixed reply such as "Go".
 
-6. **Phase 2: Generate Sub-Tasks:** Once the user confirms, read [sub-tasks.md](sub-tasks.md). Break down each task into smaller, actionable sub-tasks necessary to complete it. Ensure sub-tasks logically follow from the task and cover the implementation details implied by the requirements. Write them as the shape's Phase 2 describes.
+## Facts Are Checked Before They Are Written
 
-7. **Identify Interfaces and Relevant Files:** For each task, write its Interfaces block: what it consumes from earlier tasks and what it produces for later ones, with exact names and types. Then identify the files that will need to be created or modified and list them under `Relevant Files`, including corresponding test files.
+Every claim in a user story, Background, or Notes about how the system behaves today (when something runs, which component does what, what an older version did) comes from code or docs you read in this session. Name the file. A claim you couldn't check is either left out or marked `unverified`.
 
-8. **Self-Review:** Run the [Self-Review Step](#self-review-step-mandatory) and fix what fails.
+## One Draft, Implementer-Facing
 
-9. **Save and Report:** Save the files and report the paths written plus the self-review line.
+- Keep exactly one copy of each task file. When the session is read-only (plan mode), draft in one session-local file, show the owner that file, and write it to `<tasks dir>` once they approve. Never keep a second copy in sync.
+- Task files contain only what the implementer needs. Notes about the planning itself (superseded plans, drafts, review rounds) stay out.
+- When the owner asks to review a draft in their editor, open it with their editor. Agent shells often set `$EDITOR`/`$VISUAL` to a no-op such as `true`; in that case use `git config core.editor` without its wait flag (for example `subl`, not `subl -w`).
 
 ## Self-Review Step (Mandatory)
 
-After completing the full task list:
-- Confirm all specificity rules ([sub-tasks.md](sub-tasks.md)) are met by every sub-task.
-- Verify every task follows the INVEST checklist ([invest.md](invest.md)).
-- Ensure milestones (single list) or the Delivers column (epic) are realistic and provide working, testable states.
-- Check that no tasks are vague or require the developer to do extra research.
-- Check interface consistency: every name a task Consumes matches, exactly, what an earlier task Produces (`clearLayers()` in one task and `clearFullLayers()` in another is a bug).
-- Check that no fact is written twice: in an epic, task files link to the README instead of copying it.
+Before the Phase 2 rundown:
+- Every task follows [task-template.md](task-template.md): same sections, same order, an Epic line only in an epic.
+- Every task passes INVEST ([invest.md](invest.md)) and has its own user story.
+- Every sub-task follows [sub-tasks.md](sub-tasks.md): outcome, files and assertions only. No code, no private names, no step-by-step recipe. `_Verify:_` lines appear only in the final Verification sub-task.
+- Interfaces are consistent: every name a task Consumes matches exactly what an earlier task Produces (`clearLayers()` in one task and `clearFullLayers()` in another is a bug).
+- No fact is written twice: epic task files link to the README instead of copying it.
+- Every behavioral claim was checked ([facts](#facts-are-checked-before-they-are-written)).
 
-End the report with: `Self-review: <N> tasks and <M> sub-tasks checked; fixed: <list, or none>; blocked: <ids, or none>`.
+End the Phase 2 rundown with: `Self-review: <N> tasks and <M> sub-tasks checked; fixed: <list, or none>; blocked: <ids, or none>`.
 
 ## Tracking and History
 
-- When a sub-task is done, check it and add a bullet under it: `Verified <YYYY-MM-DD>: <what was run and observed>`. In an epic, check the task's README row when its file is complete. Nothing else carries status.
+- When a sub-task is done, check it. When the task's checks pass, add a bullet under the Verification sub-task: `Verified <YYYY-MM-DD>: <what was run and observed>`. In an epic, check the task's README row once its file is complete. Nothing else carries status.
 - A completed task is history. A later change is a dated bullet under it (`Changed <date>:`, `Superseded by <task or sub-task>:`, `Decided:`), never an edit to its text.
 
 ## Planning Writes Only Task Files
 
-While planning, write only under `tasks/`. A value the owner supplies ("my window is 204800", "ok add it") goes into the task documents, not into live config, state, or code. Live changes happen only when the owner says to execute a task.
-
-## Interaction Model
-
-The process explicitly requires a pause after Phase 1 — the parent tasks and milestones of a single list, or the README of an epic — to get user confirmation ("Go") before generating the detailed sub-tasks. This ensures the high-level plan aligns with user expectations before diving into details.
+While planning, write only task files (and, for an epic, its README). A value the owner supplies ("my window is 204800", "ok add it") goes into the task documents, not into live config, state, or code. Live changes happen only when the owner says to execute a task.
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---|---|
-| Writing sub-tasks or task files before the owner says "Go" | Stop after Phase 1 |
-| Running INVEST on sub-tasks only | INVEST applies to every task |
-| Skipping the self-review line | End the report with it |
-| An epic as one file with only parent tasks | README plus one file per task, full sub-tasks |
-| Plan kept next to the README | Fold its decisions into the README, delete it |
-| Global constraints or steps repeated in task files | Link to the README |
+| Splitting server, clients, docs or tests into separate tasks | No user story of their own: they are sub-tasks of one task |
+| A single task with Goal, Milestones, Global Constraints or `### Task N` parents | One file in [task-template.md](task-template.md) format; constraints go in Notes |
+| Different templates for single and epic tasks | One template; an epic task only adds the Epic line |
+| Writing sub-tasks before the owner approves Phase 1 | Phase 1 has no Sub-tasks section; stop after the rundown |
+| Asking for approval with the `ask` tool or "Respond with Go" | A plain rundown, then end the turn |
+| Sub-tasks with code, private names, line edits or step-by-step recipes | Outcome, files and assertions; the developer decides how |
+| A `_Verify:_` line under every sub-task | One final Verification sub-task per task |
+| A user story or note stating unchecked behavior ("injected at session start") | Check it in code first, or leave it out |
+| Two copies of a draft kept in sync | One file; move it on approval |
+| Planning notes left in the task file ("supersedes the plan; delete it") | Keep only implementer-facing content |
+| Plan kept next to the epic README | Fold its decisions into the README, delete it |
+| Global constraints repeated in epic task files | Link to the README |
 | One epic branch by default | A branch per task |
-| Checking a sub-task without a `Verified` bullet | Record what was run and observed |
+| Checking the Verification sub-task without a `Verified` bullet | Record what was run and observed |
 | Rewriting a completed task after a change | Add a dated note under it |
 | Editing live config while planning | Record the value in the task files |

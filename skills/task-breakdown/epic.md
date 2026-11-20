@@ -1,29 +1,29 @@
 # Epic
 
-For work with two or more independently mergeable tasks. Exactly two kinds of document; every fact lives in one of them.
+For work with two or more tasks, each with its own user story. An epic is a README plus one task file per task, and every fact lives in exactly one of them.
 
 ```
-tasks/[epic-name]/
-├── README.md          why and what — no implementation steps
-└── [slug].md         how — one file per task, the only place with sub-task checkboxes
+<tasks dir>/[epic-name]/
+├── README.md     why and what: decisions, global constraints, the task table. No implementation steps.
+└── [slug].md     one task, in task-template.md's format with the **Epic:** line
 ```
+
+Task files follow [task-template.md](task-template.md) with its `**Epic:** [README](README.md)` line. They link to the README; they never copy from it. The reviewer of a task copies the README's Global Constraints.
+
+Epic tasks have no numbers. The README table's order is the work order, files are named by slug, and other tasks are referred to by name. Reordering or inserting a task changes only the table.
 
 ## Phase 1
 
-Write the complete `README.md` (template below). Its Tasks table names each task's branch, what it delivers (the working state after it), and what it needs; it replaces separate milestone tables and dependency diagrams. Fold a plan given as input into the README and delete the plan file: the epic has no third document. Write no task file yet.
+Write the complete `README.md` (template below). Also write each task file, filling every section except **Sub-tasks**: the heading, the Epic line, User story, Interfaces, Background, Relevant Files and Notes. Fold a plan given as input into the README and delete the plan file; the epic has no third document.
 
 ## Phase 2
 
-Write one task file per README row (template below), with Interfaces and Relevant Files in each. README content is linked from task files, never copied.
-
-Epic tasks have no numbers: the README table order is the work order, files are named by slug, sub-tasks are unnumbered checkboxes, and other tasks are referred to by name. Reordering or inserting a task changes only the table.
-
-Each task file is a valid plan for `subagent-driven-development`: every file has the same fixed heading `# Task 1: [Name]` (one task per file, so the `1` never changes), which lets `task-brief <slug>.md 1` extract it; its Interfaces block carries what neighbouring tasks use; and the reviewer copies the README's Global Constraints.
+After the owner approves Phase 1, add the **Sub-tasks** section to each task file, following [sub-tasks.md](sub-tasks.md).
 
 ## Branches
 
-- Each task gets its own branch, cut from `main` and merged alone; the owner usually creates it by hand, so there is no branch-creation task.
-- Use one shared branch only when tasks would break `main` unless merged together, and say why in the README.
+- Each task gets its own branch, cut from the project's integration branch and merged alone. The owner usually creates it by hand, so there is no branch-creation sub-task.
+- Use one shared branch only when tasks would break the integration branch unless merged together, and say why in the README.
 - A task that changes no code (an operation, a hand-run migration) has no branch: `none (no code)`.
 - A branch name appears only in the README table.
 
@@ -47,11 +47,11 @@ Each task file is a valid plan for `subagent-driven-development`: every file has
 
 ## Tasks
 
-Check a sub-task in its task file when done, and the task here when its file is complete.
+Check a task here when every sub-task in its file is checked.
 
 | Done | Task | Branch | Delivers | Needs |
 |------|------|--------|----------|-------|
-| [ ] | [Name](slug.md) | `feature/[epic]-[slug]` | [working state after this task] | — |
+| [ ] | [Name](slug.md) | `feature/[epic]-[slug]` | [the user story's outcome once merged] | — |
 | [ ] | [Other name](other-slug.md) | none (no code) | [...] | Name |
 
 [One paragraph on order and merging.]
@@ -62,36 +62,3 @@ Check a sub-task in its task file when done, and the task here when its file is 
 ```
 
 Review Focus lists up to five such inputs; each names the task whose test pins it.
-
-## Task file template
-
-```markdown
-# Task 1: [Name]
-
-**Epic:** [README](README.md) (decisions, global constraints; Review Focus N is tested here)
-
-**Outcome:** [What the owner observes when the task is done.]
-
-**Interfaces:**
-- Consumes: [exact signatures this task uses from earlier tasks, or "nothing"]
-- Produces: [exact names, parameters, and return types later tasks rely on]
-
-## Background
-
-- [Only facts the implementer cannot find quickly: file:line, library behavior, external data details.]
-
-## Sub-tasks
-
-- [ ] **[Failing test]**: file, test names, assertions.
-  - _Verify:_ [command] → [expected failure]
-- [ ] **[Implementation]**: file, signature, values.
-  - _Verify:_ [command] → [expected output]
-
-## Relevant Files
-
-- `path/to/file` — [why]
-
-## Notes
-
-- [Gotchas]
-```

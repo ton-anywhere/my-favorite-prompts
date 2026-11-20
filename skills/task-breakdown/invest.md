@@ -1,20 +1,22 @@
 # Tasks: Breakdown Principles and INVEST Validation
 
-Applies to every **task**: a parent task in a single list, or a README row and its task file in an epic. Sub-tasks follow [sub-tasks.md](sub-tasks.md).
+Applies to every **task**: one task file, standing alone or as one row of an epic. Sub-tasks follow [sub-tasks.md](sub-tasks.md).
+
+**A task has a user story of its own.** Before calling a piece a task, write its user story: what a user can do, or what they observe, once it is merged. A piece that only makes sense together with its siblings ("server half", "client half", "docs", "tests") has no user story. It is a sub-task of the task that does have one, even when it could be merged without breaking `main`.
 
 ## Task Breakdown Principles
 
-When generating tasks, follow these heuristics to ensure a clean implementation:
+These heuristics decide the order of the work. Each split they suggest becomes its own task only when that piece has its own user story; otherwise it becomes an ordered sub-task inside the task that has one.
 
 1. **Infrastructure First**: Start with environment setup, framework configuration, and basic boilerplate.
-2. **Data vs. Schema**: Separate the creation of database structures (ActiveRecord/Migrations) from the logic that populates or ingests data.
-3. **Simplest Working Version First**: Before implementing the full/optimal solution, deliver a simpler version that works end-to-end. For example: implement keyword search before semantic search, or render static data before wiring up an API. Each upgrade to a more sophisticated approach should be its own task. This creates natural deliverable milestones and makes each stage independently testable.
-4. **Pipeline Decomposition**: For complex logic (like RAG or multi-step processing), break the pipeline into independent, testable stages (e.g., 1. Keyword Search, 2. Semantic Search Upgrade, 3. Answer Generation, 4. Pipeline Orchestration). Do not merge pipeline stages into a single task.
-5. **Logic vs. UI**: Implement core backend services and API logic before building the frontend views and loading states.
-6. **Cross-Cutting Concerns**: Treat Observability (logging, tracing, metrics) and Performance (caching, optimization) as distinct high-level tasks if they are significant.
-7. **Verification**: Always include a final task for benchmarking, specialized testing, or "Gold Standard" validation.
+2. **Data vs. Schema**: Separate creating database structures (ActiveRecord/Migrations) from the logic that populates or ingests data.
+3. **Simplest Working Version First**: Deliver a simpler version that works end to end before the full solution: keyword search before semantic search, static data before wiring up an API. Each upgrade a user can notice is its own task.
+4. **Pipeline Decomposition**: Break complex logic (RAG, multi-step processing) into testable stages (keyword search, semantic search upgrade, answer generation, orchestration). A stage whose output a user sees is a task; a stage they don't see is a sub-task.
+5. **Logic vs. UI**: Implement core backend services and API logic before the frontend views and loading states.
+6. **Cross-Cutting Concerns**: Observability (logging, tracing, metrics) and performance (caching, optimization) are tasks of their own when an operator or user notices them, and sub-tasks otherwise.
+7. **Verification**: Every task ends with a **Verification** sub-task. Benchmarking or "gold standard" validation of the whole feature is a final task of its own only in an epic.
 
-Let the number of tasks be driven by these principles and the INVEST criteria below — do not constrain the count artificially. A large feature may need 15+ tasks; a small one may need 3. Prefer more tasks that are each Small, Independent, and Testable over fewer tasks that bundle concerns. Prioritize separation of concerns (e.g., separating data ingestion from schema, or search logic from generation logic).
+The count follows from the user stories. Don't split one story across several tasks, and don't bundle two stories into one task.
 
 ## INVEST Validation
 
@@ -22,7 +24,7 @@ Before presenting the tasks (Phase 1), and again before saving (Phase 2), review
 
 - **Independent**: Can this task be implemented without another unfinished task being done first? If not, reorder or split.
 - **Negotiable**: Does it describe the *outcome*, not prescribe the mechanism? (e.g., "user receives results in their language" not "add a language toggle dropdown")
-- **Valuable**: Does completing this task leave the system in a better state? Is it a meaningful step forward on its own?
+- **Valuable**: Does it have its own user story, so that a user notices the difference once it is merged alone? A piece that only matters together with its siblings fails this test: fold it into their task as a sub-task.
 - **Estimable**: Is it specific enough for a developer to estimate the work? Apply the specificity rules in [sub-tasks.md](sub-tasks.md).
 - **Small**: Can a developer complete it in a single focused session or branch? If not, split it further.
 - **Testable**: Is there a clear, observable way to verify it's done?
