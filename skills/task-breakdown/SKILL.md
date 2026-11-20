@@ -1,6 +1,6 @@
 ---
 name: task-breakdown
-description: Use when the owner asks to break a plan, PRD, or requirements into tasks — a single task file for one user story or an epic folder with one task file and branch per story — or to update, check off, or record results in an existing task file or epic (/task-breakdown <plan or requirements>).
+description: Use when the owner asks to break a saved plan, or a spec with a decided approach, into tasks — a single task file for one user story or an epic folder with one task file and branch per story — or to update, check off, or record results in an existing task file or epic (/task-breakdown <plan>).
 disable-model-invocation: true
 license: Apache-2.0 (see LICENSE)
 metadata:
@@ -15,7 +15,7 @@ metadata:
 
 ## Goal
 
-Turn an implementation plan, a PRD, or requirements into task files. Each task file tells a developer, or a developer agent, **what** to deliver and how to prove it is done. **How** to build it is the developer's decision.
+Turn a plan that has already decided how the work is built into task files. Each task file tells a developer, or a developer agent, **what** to deliver and how to prove it is done. **How** to build each piece is the developer's decision; the overall approach is the plan's.
 
 ## Files
 
@@ -41,9 +41,21 @@ Count the **tasks**: the pieces that each have a user story of their own ([inves
 
 A single task has no Goal, Milestones, Global Constraints, or numbered parent tasks. Its project-wide constraints and branch go under **Notes**.
 
+## Input Gate
+
+This gate applies when creating tasks; updating or checking off an existing task file skips it.
+
+The input must decide **how** the work is built: it names the approach and the parts of the system that change. A saved `/plan` file does, and so does a spec whose approach was approved. Proceed with such an input.
+
+When the input only says **what** is wanted (a PRD, a requirements list, a feature request, a one-line description), write nothing and don't explore the code for it. Reply in one or two lines with the next step from the project's skill guide (`docs/using-skills.md` in the prompts repo), and end your turn:
+- scope unclear (goal, users, or in/out of scope undecided) → `/brainstorming` (or `/create-prd` for a new product), then `/plan`, then `/task-breakdown` on the saved plan;
+- scope clear → `/plan` on the input, approved with **save**, then `/task-breakdown` on the saved plan.
+
+When the owner says to proceed anyway, record each design decision you make under the task's **Notes** as `Decided: <decision> (no plan)`, and list them in the rundown.
+
 ## Process
 
-1. **Receive input:** an implementation plan, a PRD, a feature request, or a task description. With a plan as input, its decisions stand; with a PRD or requirements, you make them here.
+1. **Receive input** and apply the [input gate](#input-gate). The plan's decisions stand; don't reopen them.
 2. **Assess the current state:** read the code the work touches, and the existing patterns, components and utilities it can reuse.
 3. **Phase 1: tasks without sub-tasks.** Read [invest.md](invest.md), write each task's user story, and run INVEST on every task. Choose the [output shape](#output-shape), then write the files with every section of [task-template.md](task-template.md) except **Sub-tasks** (plus the README, for an epic).
 4. **Rundown, then stop.** Send a [rundown](#rundown) as a plain chat message and end your turn. Write no sub-tasks until the owner approves in their next message. When the owner corrects something, apply it, send a new rundown, and stop again.
@@ -102,6 +114,7 @@ While planning, write only task files (and, for an epic, its README). A value th
 | Writing sub-tasks before the owner approves Phase 1 | Phase 1 has no Sub-tasks section; stop after the rundown |
 | Asking for approval with the `ask` tool or "Respond with Go" | A plain rundown, then end the turn |
 | Sub-tasks with code, private names, line edits or step-by-step recipes | Outcome, files and assertions; the developer decides how |
+| Breaking down a feature request or PRD with no plan behind it | Stop at the input gate and point to `/plan` |
 | A `_Verify:_` line under every sub-task | One final Verification sub-task per task |
 | A user story or note stating unchecked behavior ("injected at session start") | Check it in code first, or leave it out |
 | Two copies of a draft kept in sync | One file; move it on approval |
