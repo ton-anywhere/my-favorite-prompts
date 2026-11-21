@@ -1,6 +1,7 @@
 ---
 name: code-comments
-description: "Use when writing new code or reviewing existing code to decide which comments to add, keep, or remove. Defines what makes a comment valuable vs. noise."
+description: "Use when writing or reviewing code and about to add a comment, when a diff or review adds comments, or when deciding whether an existing comment, doc comment, TODO, or workaround note should stay. Also use when the user invokes it with the seek-and-destroy argument for a codebase-wide comment sweep."
+argument-hint: "seek-and-destroy"
 license: MIT
 metadata:
   author: Airton Ponce @ton-anywhere
@@ -8,110 +9,70 @@ metadata:
 
 # Code Comments Standard
 
-Comments exist to transfer knowledge that cannot be read from the code itself. A comment that restates what the code does is noise. A comment that explains *why* it does it — or warns of a non-obvious consequence — is essential, but only when a better name cannot carry it.
+Comments are forbidden in source code. Every fact has a better home than a comment: a name, an extracted method, a test, an issue, a document, or an ADR, and this skill's job is to route each fact there.
 
----
+## Comments are forbidden — route the fact
 
-## Comment Budget
+Never write a comment in source code, and delete the ones on lines your change adds or edits — a comment you are about to write is a signal that names the artifact that is missing. Comments on lines the change does not touch are left for the seek-and-destroy sweep. Route the fact; the table below is the decision procedure, not a suggestion:
 
-Default is none. The allowlist below is exhaustive, and every admitted "why" is one line adjacent to the construct it constrains: no multi-line rationale, no file-level header. The restart warning and the commented-out template are the only block forms.
-
-If the fact is a number, an ordering, or an invariant, it is not a comment: it belongs in a name, an assertion, or a test. An invariant a test can hold is never a comment.
-
----
-
-## Add or Keep Comments When
-
-**A restart or deployment action is required.**
-Initializers and certain config files require a server restart to take effect. Always include the restart warning at the top of those files:
-```ruby
-# Be sure to restart your server when you modify this file.
-```
-
-**The "why" is not derivable from the code.**
-If a future developer would ask "why is this here?", the comment belongs. Examples:
-- A migration column that is intentionally nullable until a later task populates it
-- An index that prevents a non-obvious data integrity problem
-- A formatter or library chosen for compatibility with a specific infrastructure tool
-
-**An inline operation is opaque.**
-Short inline comments on non-obvious expressions are acceptable:
-```ruby
-trace_id = context.trace_id.unpack1('H*') # binary → hex string
-```
-
-**A commented-out block is a deliberate template.**
-If a block is commented out because it is optional or environment-specific (e.g. CSP policy, SSL enforcement, DNS rebinding protection), keep it so the path to activation is clear without requiring external research.
-
-**A security concern is present.**
-Any configuration that filters sensitive data, enforces access control, or affects security posture should explain what it protects and why. Example: parameter filtering comments explaining partial-match behavior and the goal of limiting log dissemination.
-
-**A health or observability endpoint serves an infrastructure role.**
-If a route or config is consumed by load balancers, uptime monitors, or tracing systems, say so explicitly.
-
----
-
-## Prefer a rename, not a comment
-
-A comment that explains what a name does not is a naming defect. Before writing or keeping one, try to encode it:
-
-| Comment | Better |
+| The comment you were about to write | Do this instead |
 |---|---|
-| `// One function per transition` | helper named `transition(…)`, callers `stepStateMachine.run(…)` |
-| `// Conventional Commits type prefixes` | `CONVENTIONAL_COMMIT_TYPES` |
-| `// Change the state` | `transition(...)` / `markLost(...)` |
-| `// T is unconstrained; an async callback runs writes outside this commit` | keep the comment: no name carries it |
+| Restates what the code visibly does | Nothing. The code is the statement. |
+| Explains what a poorly named thing does | Rename the variable or function, or extract a method whose name carries it |
+| Explains a deployment or environment value | Move the value into a config file, where its comment may stay |
+| Excuses a hacky implementation ("workaround for…", "temporary") | File an issue or task for the real fix; leave the code uncommented |
+| States an invariant or expected behavior | A test that asserts it |
+| Records a non-obvious decision | An ADR |
+| Documents how to use a module or API | A document — the module README or the project's usage guide |
 
-Rule: if a competent reader still cannot learn the fact after a rename, it is a comment. Rename only when the new name carries a fact that a removed comment held. Never rename an exported symbol or type for a fact that a doc or a kept comment already states.
+Examples: `// One function per transition` → `transition(…)`; `// Conventional Commits type prefixes` → `CONVENTIONAL_COMMIT_TYPES`; `// T is unconstrained; an async callback runs writes outside this commit` → an ADR — the constraint cannot live in a name.
 
----
+Worked before/after examples for every destination are in [references/routing-examples.md](references/routing-examples.md); templates for the documents a comment becomes — ADR, fix task, module doc — are in [references/artifact-templates.md](references/artifact-templates.md).
+
+Rename only when the new name carries a fact a removed comment held. Never rename an exported symbol or type for a fact a doc already states.
+
+## The ban's scope
+
+- **Source code is in scope** — application code, libraries, migrations, tests, scripts: no comment may exist. If the fact is a number, an ordering, or an invariant, it belongs in a name, an assertion, or a test.
+- **Config files are out of scope** — files whose job is configuration: initializers, environment configs, seeds, dependency manifests (Gemfile, Podfile), YAML, TOML, INI-family (`.ini`, `.cfg`, `.conf`, `.properties`), JSONC and comment-bearing JSON (`*.jsonc`, `tsconfig.json`, editor settings), Dockerfiles, env files, Makefiles, Terraform, CI and deploy manifests. Leave their comments as they are.
+- **Machine-read comments are not prose** — shebangs, encoding and magic comments (`# frozen_string_literal:`), tool pragmas and directives (`# rubocop:`, `eslint-disable`, `// @ts-expect-error`, `# type: ignore`, `//go:build`), license headers, and `Usage:` headers on human-facing scripts. Leave them.
+- **Doc comments are convention-gated** — see the next section.
+
+## Doc comments
+
+Doc comments (rustdoc, javadoc, godoc, docstrings, YARD) are a third kind: neither line comments nor configuration. They are undesirable by default — never introduce them to a project that does not use them.
+
+Where the project's convention carries doc comments, adapt to it: an item of a kind that already carries them gets them in the project's format and tags, written with facts the signature cannot express — units, errors, side effects, invariants, examples — never a restatement of the signature. Such a doc comment is left alone in review; in a project with no such convention it is an ordinary comment and the ban applies.
 
 ## Contracts: own vs external
 
-- **External contract** — another team's API, library behavior, CLI exit codes, wire format, database, protocol: document it at the boundary; the reader cannot check it from this repository.
-- **Internal contract** — an interface or type whose every implementer and caller live in this repository: no per-member doc comments for names or types. Keep one line on a member when callers depend on a behavior the signature cannot express (a never-reject guarantee, a call-order rule, an ordering invariant).
+- **External contract** — another team's API, library behavior, CLI exit codes, wire format, database, protocol: record it at the boundary in the project's docs; the reader cannot check it from this repository.
+- **Internal contract** — an interface or type whose every implementer and caller live in this repository: no per-member doc comments. A behavior callers depend on that the signature cannot express (a never-reject guarantee, a call-order rule, an ordering invariant) goes in the interface's doc, or in a test that pins it.
 - Before deleting a doc comment, search for references to it (`docs/`, `tasks/`, `AGENTS.md`, `README`). A pointer such as "`Notifier` in `interfaces.ts` carries this constraint" goes stale silently.
-
----
-
-## Remove or Skip Comments When
-
-**The comment restates the code.**
-`# Set version to 1.0` above `config.assets.version = '1.0'` adds nothing.
-
-**The information is authoritative elsewhere.**
-Standard Rails environment config options, Puma DSL parameters, and RSpec setup prose are all documented in their official guides. Duplicating them in-file creates maintenance burden without adding value.
-
-**The comment is auto-generated boilerplate.**
-Schema file headers, seeds file examples, and generator-output comments can be removed without loss.
-
-**The "why" is already obvious from context.**
-Method names, variable names, and surrounding code often make intent clear. Don't add prose that a reader would reach without the comment.
-
----
-
-## Placement and Tone
-
-- **File-level comments**: top of file, before any `require` or configuration call.
-- **Block-level comments**: line immediately above the construct they describe, indented to match.
-- **Inline comments**: sparingly — only for opaque expressions (format conversions, magic numbers, binary ops).
-- **Section dividers** (`# === SCOPES ===`): avoid in production code; acceptable in long test files only.
-
----
 
 ## Quick Decision Test
 
-Before writing or keeping a comment, ask: *"Would a competent developer, reading only this repository, understand why this line exists without the comment?"*
+Before touching a comment, ask in order:
 
-- **No** → keep the comment.
-- **Yes** → remove it.
+1. **Is the file configuration?** → leave the comment alone.
+2. **Is it machine-read** (pragma, shebang, license header)? → leave it alone.
+3. **Is it a doc comment in a format the project already uses?** → keep it, per *Doc comments*.
+4. **Otherwise** → the comment goes, and its fact routes per the table.
 
----
+## Modes
 
-## Auditing a branch
+- **Writing or reviewing code** (default): everything above applies, ending with the mandatory diff audit below.
+- **seek-and-destroy**: the full-codebase comment sweep. Runs only when the user invokes this skill by hand with the `seek-and-destroy` argument. A plain request to "remove all comments" never starts it: answer from the rules above, and say the sweep is manual — the user invokes the skill with the `seek-and-destroy` argument to run it. When the argument is present, read [references/seek-and-destroy.md](references/seek-and-destroy.md) and follow it. The scope above is the only exemption list; the mode file never overrides it.
 
-1. Inventory added comments: `git diff main...HEAD | grep -E '^\+\s*(//|/\*\*|\*)'`.
-   A pattern that excludes a second non-`+` character misses plain `+//` lines entirely.
-2. Classify each hit: narrates-code, why, external contract, or tool-mandated (restart warnings, `shortcut:` markers, usage headers).
-3. Narrates-code → rename or restructure, then delete. Everything else → judge against the sections above.
-4. Delete one comment per edit, so each removal is reviewable.
+## Audit your own diff
+
+Before presenting a code change, inventory the comments it added. Skip this audit = incomplete change.
+
+1. Run against the branch's base, including uncommitted edits (`git add -N <file>` first for new untracked files):
+
+   ```bash
+   git diff --merge-base origin/HEAD | grep -nE '^\+(\s*(#|//|/\*|\*)|.*\s(#|//)\s)'
+   ```
+
+   Replace `origin/HEAD` with the base branch when the remote has no default branch set.
+2. Classify each hit with the Quick Decision Test. A hit that survives all four questions is deleted or rerouted to the artifact the table names.
